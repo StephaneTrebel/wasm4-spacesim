@@ -1,30 +1,28 @@
 #[cfg(feature = "buddy-alloc")]
 mod alloc;
+mod game;
+mod graphics;
+mod hud;
+mod maths;
+mod palette;
+mod player;
+mod utils;
 mod wasm4;
-use wasm4::*;
 
-#[rustfmt::skip]
-const SMILEY: [u8; 8] = [
-    0b11000011,
-    0b10000001,
-    0b00100100,
-    0b00100100,
-    0b00000000,
-    0b00100100,
-    0b10011001,
-    0b11000011,
-];
+use lazy_static::lazy_static;
+use spin::Mutex;
+
+lazy_static! {
+    static ref GAME: Mutex<game::Game> = Mutex::new(game::Game::new());
+}
+
+#[no_mangle]
+fn start() {
+    palette::set_palette([0x000, 0xf9a875, 0xeb6b6f, 0x7c3f58]);
+    GAME.lock().start();
+}
 
 #[no_mangle]
 fn update() {
-    unsafe { *DRAW_COLORS = 2 }
-    text("Hello from Rust!", 10, 10);
-
-    let gamepad = unsafe { *GAMEPAD1 };
-    if gamepad & BUTTON_1 != 0 {
-        unsafe { *DRAW_COLORS = 4 }
-    }
-
-    blit(&SMILEY, 76, 76, 8, 8, BLIT_1BPP);
-    text("Press X to blink", 16, 90);
+    GAME.lock().update();
 }
