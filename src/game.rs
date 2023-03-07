@@ -1,3 +1,6 @@
+extern crate alloc;
+use alloc::vec::Vec;
+
 use fastrand::Rng;
 
 use crate::{
@@ -34,8 +37,8 @@ impl Game {
             rng,
             player_ship: player::PlayerShip::new(),
             current_tick: 0,
-            debris: vec![],
-            distant_stars: vec![],
+            debris: Vec::new(),
+            distant_stars: Vec::new(),
             buttons: Buttons {
                 up: false,
                 down: false,
@@ -48,7 +51,7 @@ impl Game {
     }
 
     pub fn start(&mut self) {
-        self.distant_stars = vec![];
+        self.distant_stars = Vec::new();
         for _ in 0..9 {
             self.distant_stars.push(Coordinates {
                 x: self.rng.u8(0..159) as i32,
@@ -125,7 +128,7 @@ impl Game {
     }
 
     pub fn update_debris(&mut self) {
-        let mut remove_indexes: Vec<usize> = vec![];
+        let mut remove_indexes: Vec<usize> = Vec::new();
         let mut move_x = 0;
         let mut move_y = 0;
 
@@ -190,7 +193,7 @@ impl Game {
             move_x = 1
         }
 
-        let mut remove_indexes: Vec<usize> = vec![];
+        let mut remove_indexes: Vec<usize> = Vec::new();
 
         for (index, star) in self.distant_stars.iter_mut().enumerate() {
             if move_x != 0 {

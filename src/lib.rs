@@ -1,3 +1,5 @@
+#![no_std]
+
 #[cfg(feature = "buddy-alloc")]
 mod alloc;
 mod game;
