@@ -4,6 +4,8 @@ A game written in Rust for the [WASM-4](https://wasm4.org) fantasy console.
 
 See it in action [HERE](https://itch.io/embed-upload/7476472?color=333333) !
 
+[![Space RPG WASM4](./assets/screenshot.png)](https://itch.io/embed-upload/7476472?color=333333)
+
 ## The game
 
 You fly a spaceship in the vast and empty universe
