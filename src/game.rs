@@ -53,7 +53,7 @@ impl Game {
     }
 
     pub fn draw(&self) {
-        set_draw_color(0x1204);
+        set_draw_color(0x0001);
 
         for debris in &self.debris {
             graphics::draw_debris(debris, &self.rng);
@@ -63,6 +63,7 @@ impl Game {
             graphics::draw_star(star)
         }
 
+        set_draw_color(0x0043);
         blit(
             &hud::HUD,
             0,
@@ -72,6 +73,7 @@ impl Game {
             hud::HUD_FLAGS,
         );
 
+        set_draw_color(0x0013);
         text(
             format!("SPD:{}", self.player_ship.speed.to_string()),
             0,
