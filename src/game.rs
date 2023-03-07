@@ -8,24 +8,20 @@ use crate::{
     wasm4::{self, *},
 };
 
+pub struct Buttons {
+    up: bool,
+    down: bool,
+    left: bool,
+    right: bool,
+}
+
 pub struct Game {
     rng: Rng,
     player_ship: player::PlayerShip,
     current_tick: i32,
     debris: Vec<Coordinates>,
     distant_stars: Vec<Coordinates>,
-    prev_gamepad: u8,
-}
-
-fn generate_distant_stars(rng: &Rng) -> Vec<Coordinates> {
-    let mut distant_stars: Vec<Coordinates> = vec![];
-    for _ in 0..9 {
-        distant_stars.push(Coordinates {
-            x: rng.u8(0..159) as i32,
-            y: rng.u8(0..159) as i32,
-        });
-    }
-    distant_stars
+    buttons: Buttons,
 }
 
 impl Game {
@@ -37,12 +33,23 @@ impl Game {
             current_tick: 0,
             debris: vec![],
             distant_stars: vec![],
-            prev_gamepad: 0,
+            buttons: Buttons {
+                up: false,
+                down: false,
+                left: false,
+                right: false,
+            },
         }
     }
 
     pub fn start(&mut self) {
-        self.distant_stars = generate_distant_stars(&self.rng)
+        self.distant_stars = vec![];
+        for _ in 0..9 {
+            self.distant_stars.push(Coordinates {
+                x: self.rng.u8(0..159) as i32,
+                y: self.rng.u8(0..159) as i32,
+            });
+        }
     }
 
     pub fn draw(&self) {
@@ -70,6 +77,29 @@ impl Game {
             0,
             150,
         );
+    }
+
+    pub fn get_pressed_buttons(&mut self) {
+        let gamepad = unsafe { *wasm4::GAMEPAD1 };
+        let just_pressed = gamepad;
+        self.buttons = Buttons {
+            up: false,
+            down: false,
+            left: false,
+            right: false,
+        };
+        if just_pressed & wasm4::BUTTON_UP != 0 {
+            self.buttons.up = true;
+        }
+        if just_pressed & wasm4::BUTTON_DOWN != 0 {
+            self.buttons.down = true;
+        }
+        if just_pressed & wasm4::BUTTON_LEFT != 0 {
+            self.buttons.left = true;
+        }
+        if just_pressed & wasm4::BUTTON_RIGHT != 0 {
+            self.buttons.right = true;
+        }
     }
 
     pub fn update_debris(&mut self) {
@@ -105,22 +135,20 @@ impl Game {
     }
 
     pub fn update_stars(&mut self) {
-        let gamepad = unsafe { *wasm4::GAMEPAD1 };
-        let just_pressed = gamepad & (gamepad ^ self.prev_gamepad);
-
         let mut move_x = 0;
         let mut move_y = 0;
-        if just_pressed & wasm4::BUTTON_UP != 0 {
-            move_y = 1;
+
+        if self.buttons.up {
+            move_y = -1
         }
-        if just_pressed & wasm4::BUTTON_DOWN != 0 {
-            move_y = -1;
+        if self.buttons.down {
+            move_y = 1
         }
-        if just_pressed & wasm4::BUTTON_LEFT != 0 {
-            move_x = -1;
+        if self.buttons.left {
+            move_x = -1
         }
-        if just_pressed & wasm4::BUTTON_RIGHT != 0 {
-            move_x = 1;
+        if self.buttons.right {
+            move_x = 1
         }
 
         let mut remove_indexes: Vec<usize> = vec![];
@@ -138,18 +166,32 @@ impl Game {
         }
         for index in remove_indexes {
             self.distant_stars.remove(index);
-        }
-
-        if self.distant_stars.len() < 10 && self.current_tick % 10 == 0 {
             self.distant_stars.push(Coordinates {
-                x: self.rng.u8(0..159) as i32,
-                y: self.rng.u8(0..159) as i32,
+                x: {
+                    if move_x == -1 && move_y == 0 {
+                        159
+                    } else if move_x == 1 && move_y == 0 {
+                        0
+                    } else {
+                        self.rng.u8(0..159)
+                    }
+                } as i32,
+                y: {
+                    if move_y == -1 && move_x == 0 {
+                        159
+                    } else if move_y == 1 && move_x == 0 {
+                        0
+                    } else {
+                        self.rng.u8(0..159)
+                    }
+                } as i32,
             });
         }
     }
 
     pub fn update(&mut self) {
         self.current_tick = self.current_tick + 1;
+        self.get_pressed_buttons();
         self.update_debris();
         self.update_stars();
         self.draw();
