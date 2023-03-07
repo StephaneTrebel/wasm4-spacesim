@@ -104,8 +104,26 @@ impl Game {
 
     pub fn update_debris(&mut self) {
         let mut remove_indexes: Vec<usize> = vec![];
+        let mut move_x = 0;
+        let mut move_y = 0;
+
+        if self.buttons.up {
+            move_y = -1
+        }
+        if self.buttons.down {
+            move_y = 1
+        }
+        if self.buttons.left {
+            move_x = -1
+        }
+        if self.buttons.right {
+            move_x = 1
+        }
+
 
         for (index, debris) in self.debris.iter_mut().enumerate() {
+            debris.x = debris.x + move_x;
+            debris.y = debris.y + move_y;
             if debris.x < 80 {
                 debris.x = debris.x - 1
             }
@@ -128,8 +146,8 @@ impl Game {
 
         if self.debris.len() < 10 && self.current_tick % 10 == 0 {
             self.debris.push(Coordinates {
-                x: 80 + self.rng.i32(-10..10),
-                y: 80 + self.rng.i32(-10..10),
+                x: 80 + self.rng.i32(-20..20) + 1,
+                y: 80 + self.rng.i32(-20..20) + 1,
             });
         }
     }
