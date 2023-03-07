@@ -5,6 +5,7 @@ use crate::{
     maths::Coordinates,
     palette::set_draw_color,
     player,
+    utils::clamp,
     wasm4::{self, *},
 };
 
@@ -13,6 +14,8 @@ pub struct Buttons {
     down: bool,
     left: bool,
     right: bool,
+    two: bool,
+    one: bool,
 }
 
 pub struct Game {
@@ -38,6 +41,8 @@ impl Game {
                 down: false,
                 left: false,
                 right: false,
+                two: false,
+                one: false,
             },
         }
     }
@@ -89,6 +94,8 @@ impl Game {
             down: false,
             left: false,
             right: false,
+            two: false,
+            one: false,
         };
         if just_pressed & wasm4::BUTTON_UP != 0 {
             self.buttons.up = true;
@@ -102,6 +109,12 @@ impl Game {
         if just_pressed & wasm4::BUTTON_RIGHT != 0 {
             self.buttons.right = true;
         }
+        if just_pressed & wasm4::BUTTON_1 != 0 {
+            self.buttons.one = true;
+        }
+        if just_pressed & wasm4::BUTTON_2 != 0 {
+            self.buttons.two = true;
+        }
     }
 
     pub fn update_debris(&mut self) {
@@ -109,19 +122,18 @@ impl Game {
         let mut move_x = 0;
         let mut move_y = 0;
 
-        if self.buttons.up {
+        if !self.buttons.two && !self.buttons.one && self.buttons.up {
             move_y = -1
         }
-        if self.buttons.down {
+        if !self.buttons.two && !self.buttons.one && self.buttons.down {
             move_y = 1
         }
-        if self.buttons.left {
+        if !self.buttons.two && !self.buttons.one && self.buttons.left {
             move_x = -1
         }
-        if self.buttons.right {
+        if !self.buttons.two && !self.buttons.one && self.buttons.right {
             move_x = 1
         }
-
 
         for (index, debris) in self.debris.iter_mut().enumerate() {
             debris.x = debris.x + move_x;
@@ -158,16 +170,16 @@ impl Game {
         let mut move_x = 0;
         let mut move_y = 0;
 
-        if self.buttons.up {
+        if !self.buttons.two && !self.buttons.one && self.buttons.up {
             move_y = -1
         }
-        if self.buttons.down {
+        if !self.buttons.two && !self.buttons.one && self.buttons.down {
             move_y = 1
         }
-        if self.buttons.left {
+        if !self.buttons.two && !self.buttons.one && self.buttons.left {
             move_x = -1
         }
-        if self.buttons.right {
+        if !self.buttons.two && !self.buttons.one && self.buttons.right {
             move_x = 1
         }
 
@@ -209,11 +221,21 @@ impl Game {
         }
     }
 
+    pub fn update_speed(&mut self) {
+        if self.buttons.two && self.buttons.up {
+            self.player_ship.speed = clamp(0, self.player_ship.speed + 1, 150);
+        }
+        if self.buttons.two && self.buttons.down {
+            self.player_ship.speed = clamp(0, self.player_ship.speed - 1, 150);
+        }
+    }
+
     pub fn update(&mut self) {
         self.current_tick = self.current_tick + 1;
         self.get_pressed_buttons();
         self.update_debris();
         self.update_stars();
+        self.update_speed();
         self.draw();
     }
 }
