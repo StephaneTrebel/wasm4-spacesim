@@ -145,20 +145,22 @@ impl Game {
             move_x = 1
         }
 
+        let speed = self.player_ship.speed / 30 + 1;
+
         for (index, debris) in self.debris.iter_mut().enumerate() {
             debris.x = debris.x + move_x;
             debris.y = debris.y + move_y;
             if debris.x < 80 {
-                debris.x = debris.x - 1
+                debris.x = debris.x - speed
             }
             if debris.x > 80 {
-                debris.x = debris.x + 1
+                debris.x = debris.x + speed
             }
             if debris.y < 80 {
-                debris.y = debris.y - 1
+                debris.y = debris.y - speed
             }
             if debris.y > 80 {
-                debris.y = debris.y + 1
+                debris.y = debris.y + speed
             }
             if debris.x < 0 || debris.x > 159 || debris.y < 0 || debris.y > 159 {
                 remove_indexes.push(index);
@@ -168,7 +170,7 @@ impl Game {
             self.debris.remove(index);
         }
 
-        if self.debris.len() < 10 && self.current_tick % 10 == 0 {
+        if self.debris.len() < 10 {
             self.debris.push(Coordinates {
                 x: 80 + self.rng.i32(-20..20) + 1,
                 y: 80 + self.rng.i32(-20..20) + 1,
