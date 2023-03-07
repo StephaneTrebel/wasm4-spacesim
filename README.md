@@ -21,7 +21,7 @@ Build the cart by running:
 make prepare-distribution
 ```
 
-Then open `dist/my-game.html` with your browser to run the game !
+Then open `dist/index.html` with your browser to run the game !
 
 
 For more info about setting up WASM-4, see the [quickstart guide](https://wasm4.org/docs/getting-started/setup?code-lang=rust#quickstart).

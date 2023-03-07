@@ -57,4 +57,4 @@ run-snipped-optimized: ## Run a release+snipped version (watch mode in w4)
 
 .PHONY: prepare-distribution
 prepare-distribution: $(TARGET_SNIPPED_OPTIMIZED_CART)
-	@w4 bundle $(TARGET_SNIPPED_OPTIMIZED_CART) --title "SpaceRPG" --html dist/my-game.html
+	@w4 bundle $(TARGET_SNIPPED_OPTIMIZED_CART) --title "SpaceRPG" --html dist/index.html
