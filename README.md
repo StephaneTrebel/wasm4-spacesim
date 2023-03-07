@@ -2,19 +2,18 @@
 
 A game written in Rust for the [WASM-4](https://wasm4.org) fantasy console.
 
+See it in action [HERE](https://itch.io/embed-upload/7476472?color=333333) !
+
 ## Building
 
 Build the cart by running:
 
 ```shell
-cargo build --release
+make prepare-distribution
 ```
 
-Then run it with:
+Then open `dist/my-game.html` with your browser to run the game !
 
-```shell
-w4 run target/wasm32-unknown-unknown/release/cart.wasm
-```
 
 For more info about setting up WASM-4, see the [quickstart guide](https://wasm4.org/docs/getting-started/setup?code-lang=rust#quickstart).
 
