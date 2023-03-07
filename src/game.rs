@@ -79,11 +79,18 @@ impl Game {
         );
 
         set_draw_color(0x0013);
-        text(
-            format!("SPD:{}", self.player_ship.speed.to_string()),
-            0,
-            150,
-        );
+        if self.buttons.one {
+            text(b"\x80", 140, 150);
+        }
+        if self.buttons.two {
+            text(b"\x81", 150, 150);
+            if self.buttons.up {
+                text("SPD+", 0, 150);
+            }
+            if self.buttons.down {
+                text("SPD-", 0, 150);
+            }
+        }
     }
 
     pub fn get_pressed_buttons(&mut self) {
