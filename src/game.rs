@@ -21,6 +21,27 @@ pub struct Buttons {
     one: bool,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(i8)]
+pub enum DirectionX {
+    Left = -1,
+    Center = 0,
+    Right = 1,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(i8)]
+pub enum DirectionY {
+    Down = 1,
+    Center = 0,
+    Up = -1,
+}
+
+pub struct Movement {
+    delta_x: DirectionX,
+    delta_y: DirectionY,
+}
+
 pub struct Game {
     rng: Rng,
     player_ship: player::PlayerShip,
@@ -28,6 +49,7 @@ pub struct Game {
     debris: Vec<Coordinates>,
     distant_stars: Vec<Coordinates>,
     buttons: Buttons,
+    movement: Movement,
 }
 
 impl Game {
@@ -46,6 +68,10 @@ impl Game {
                 right: false,
                 two: false,
                 one: false,
+            },
+            movement: Movement {
+                delta_x: DirectionX::Center,
+                delta_y: DirectionY::Center,
             },
         }
     }
@@ -96,7 +122,7 @@ impl Game {
         }
     }
 
-    pub fn get_pressed_buttons(&mut self) {
+    pub fn update_pressed_buttons(&mut self) {
         let gamepad = unsafe { *wasm4::GAMEPAD1 };
         let just_pressed = gamepad;
         self.buttons = Buttons {
@@ -127,29 +153,34 @@ impl Game {
         }
     }
 
+    pub fn update_movement(&mut self) {
+        self.movement.delta_x = DirectionX::Center;
+        self.movement.delta_y = DirectionY::Center;
+
+        if !self.buttons.two && !self.buttons.one {
+            if self.buttons.up {
+                self.movement.delta_y = DirectionY::Up;
+            }
+            if self.buttons.down {
+                self.movement.delta_y = DirectionY::Down;
+            }
+            if self.buttons.left {
+                self.movement.delta_x = DirectionX::Left;
+            }
+            if self.buttons.right {
+                self.movement.delta_x = DirectionX::Right;
+            }
+        }
+    }
+
     pub fn update_debris(&mut self) {
         let mut remove_indexes: Vec<usize> = Vec::new();
-        let mut move_x = 0;
-        let mut move_y = 0;
-
-        if !self.buttons.two && !self.buttons.one && self.buttons.up {
-            move_y = -1
-        }
-        if !self.buttons.two && !self.buttons.one && self.buttons.down {
-            move_y = 1
-        }
-        if !self.buttons.two && !self.buttons.one && self.buttons.left {
-            move_x = -1
-        }
-        if !self.buttons.two && !self.buttons.one && self.buttons.right {
-            move_x = 1
-        }
 
         let speed = self.player_ship.speed / 30 + 1;
 
         for (index, debris) in self.debris.iter_mut().enumerate() {
-            debris.x = debris.x + move_x;
-            debris.y = debris.y + move_y;
+            debris.x = debris.x + self.movement.delta_x as i32;
+            debris.y = debris.y + self.movement.delta_y as i32;
             if debris.x < 80 {
                 debris.x = debris.x - speed
             }
@@ -179,30 +210,14 @@ impl Game {
     }
 
     pub fn update_stars(&mut self) {
-        let mut move_x = 0;
-        let mut move_y = 0;
-
-        if !self.buttons.two && !self.buttons.one && self.buttons.up {
-            move_y = -1
-        }
-        if !self.buttons.two && !self.buttons.one && self.buttons.down {
-            move_y = 1
-        }
-        if !self.buttons.two && !self.buttons.one && self.buttons.left {
-            move_x = -1
-        }
-        if !self.buttons.two && !self.buttons.one && self.buttons.right {
-            move_x = 1
-        }
-
         let mut remove_indexes: Vec<usize> = Vec::new();
 
         for (index, star) in self.distant_stars.iter_mut().enumerate() {
-            if move_x != 0 {
-                star.x = star.x + move_x;
+            if self.movement.delta_x != DirectionX::Center {
+                star.x = star.x + self.movement.delta_x as i32;
             }
-            if move_y != 0 {
-                star.y = star.y + move_y;
+            if self.movement.delta_y != DirectionY::Center {
+                star.y = star.y + self.movement.delta_y as i32;
             }
             if star.x < 0 || star.x > 159 || star.y < 0 || star.y > 159 {
                 remove_indexes.push(index);
@@ -212,18 +227,26 @@ impl Game {
             self.distant_stars.remove(index);
             self.distant_stars.push(Coordinates {
                 x: {
-                    if move_x == -1 && move_y == 0 {
+                    if self.movement.delta_x == DirectionX::Left
+                        && self.movement.delta_y == DirectionY::Center
+                    {
                         159
-                    } else if move_x == 1 && move_y == 0 {
+                    } else if self.movement.delta_x == DirectionX::Right
+                        && self.movement.delta_y == DirectionY::Center
+                    {
                         0
                     } else {
                         self.rng.u8(0..159)
                     }
                 } as i32,
                 y: {
-                    if move_y == -1 && move_x == 0 {
+                    if self.movement.delta_y == DirectionY::Up
+                        && self.movement.delta_x == DirectionX::Center
+                    {
                         159
-                    } else if move_y == 1 && move_x == 0 {
+                    } else if self.movement.delta_y == DirectionY::Down
+                        && self.movement.delta_x == DirectionX::Center
+                    {
                         0
                     } else {
                         self.rng.u8(0..159)
@@ -244,7 +267,8 @@ impl Game {
 
     pub fn update(&mut self) {
         self.current_tick = self.current_tick + 1;
-        self.get_pressed_buttons();
+        self.update_pressed_buttons();
+        self.update_movement();
         self.update_debris();
         self.update_stars();
         self.update_speed();
