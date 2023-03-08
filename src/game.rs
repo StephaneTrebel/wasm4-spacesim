@@ -1,3 +1,4 @@
+extern crate alloc;
 use alloc::{borrow::ToOwned, vec::Vec};
 
 use fastrand::Rng;
@@ -198,46 +199,40 @@ impl Game {
     }
 
     pub fn update_debris(&mut self) {
-        let speed: f32 = self.player_ship.speed as f32 / 60_f32;
+        let speed: f32 = (self.player_ship.speed as f32).log(10_f32);
 
         for (_, debris) in self.debris.iter_mut().enumerate() {
             debris.x = debris.x + self.movement.delta_x as i32 * 2;
             debris.y = debris.y + self.movement.delta_y as i32 * 2;
             if debris.x < 80 {
-                debris.x = debris.x - (speed * self.rng.i32(0..2) as f32) as i32;
+                debris.x = debris.x - (speed * self.rng.f32() * 2_f32) as i32;
                 if debris.x <= 0 {
                     debris.x = 80 + self.rng.i32(-20..20) - self.movement.delta_x as i32 * 5;
                 }
-                if debris.x == 80 {
-                    debris.x = 81;
-                }
             }
             if debris.x > 80 {
-                debris.x = debris.x + (speed * self.rng.i32(0..2) as f32) as i32;
+                debris.x = debris.x + (speed * self.rng.f32() * 2_f32) as i32;
                 if debris.x >= 159 {
                     debris.x = 80 + self.rng.i32(-20..20) - self.movement.delta_x as i32 * 5;
-                    if debris.x == 80 {
-                        debris.x = 81;
-                    }
                 }
             }
             if debris.y < 80 {
-                debris.y = debris.y - (speed * self.rng.i32(0..2) as f32) as i32;
+                debris.y = debris.y - (speed * self.rng.f32() * 2_f32) as i32;
                 if debris.y <= 0 {
                     debris.y = 80 + self.rng.i32(-20..20) - self.movement.delta_y as i32 * 5;
-                    if debris.y == 80 {
-                        debris.y = 81;
-                    }
                 }
             }
             if debris.y > 80 {
-                debris.y = debris.y + (speed * self.rng.i32(0..2) as f32) as i32;
+                debris.y = debris.y + (speed * self.rng.f32() * 2_f32) as i32;
                 if debris.y >= 159 {
                     debris.y = 80 + self.rng.i32(-20..20) - self.movement.delta_y as i32 * 5;
-                    if debris.y == 80 {
-                        debris.y = 81;
-                    }
                 }
+            }
+            if debris.x == 80 {
+                debris.x = 81;
+            }
+            if debris.y == 80 {
+                debris.y = 81;
             }
         }
     }
