@@ -123,8 +123,8 @@ impl Game {
         set_draw_color(0x0043);
         blit(
             &hud::HUD,
-            0 + self.movement.delta_x as i32 * 3,
-            0 + self.movement.delta_y as i32 * 3,
+            -3 + self.movement.delta_x as i32 * 3,
+            -3 + self.movement.delta_y as i32 * 3,
             hud::HUD_WIDTH,
             hud::HUD_HEIGHT,
             hud::HUD_FLAGS,
