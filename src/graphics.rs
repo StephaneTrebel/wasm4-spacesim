@@ -31,11 +31,11 @@ pub fn pixel(x: i32, y: i32, color: u8) {
 }
 
 pub fn draw_star(coords: &Coordinates) {
-    pixel(coords.x, coords.y, 1);
+    pixel(coords.x as i32, coords.y as i32, 1);
 }
 
 pub fn draw_debris(coords: &Coordinates, rng: &Rng) {
     let delta_x = rng.i8(-1..1) as i32;
     let delta_y = rng.i8(-1..1) as i32;
-    pixel(coords.x + delta_x, coords.y + delta_y, 1);
+    pixel(coords.x as i32 + delta_x, coords.y as i32 + delta_y, 1);
 }

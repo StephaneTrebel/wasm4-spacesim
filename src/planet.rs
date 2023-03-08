@@ -1,5 +1,5 @@
 extern crate alloc;
-use alloc::string::{ToString, String};
+use alloc::string::{String, ToString};
 
 use crate::maths::Coordinates;
 
@@ -9,9 +9,9 @@ pub struct Planet {
 }
 
 impl Planet {
-    pub fn new(x: i32, y: i32, z: i32, name: &str) -> Self {
+    pub fn new(x: f32, y: f32, z: f32, name: &str) -> Self {
         Self {
-            coordinates: Coordinates { x, y, z },
+            coordinates: Coordinates { x, y, z, w: 1.0 },
             name: name.to_string(),
         }
     }

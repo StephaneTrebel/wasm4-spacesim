@@ -84,35 +84,37 @@ impl Game {
     pub fn start(&mut self) {
         for _ in 0..9 {
             self.distant_stars.push(Coordinates {
-                x: self.rng.u8(0..159) as i32,
-                y: self.rng.u8(0..159) as i32,
-                z: 0,
+                x: self.rng.f32() * 159.0,
+                y: self.rng.f32() * 159.0,
+                z: 0.0,
+                w: 1.0,
             });
         }
 
         for _ in 0..9 {
             self.debris.push(Coordinates {
                 x: {
-                    let x = 80 + self.rng.i32(-20..20);
-                    if x == 80 {
-                        81
+                    let x = 80.0 + self.rng.f32() * 40.0 - 20.0;
+                    if x == 80.0 {
+                        81.0
                     } else {
                         x
                     }
                 },
                 y: {
-                    let y = 80 + self.rng.i32(-20..20);
-                    if y == 80 {
-                        81
+                    let y = 80.0 + self.rng.f32() * 40.0 - 20.0;
+                    if y == 80.0 {
+                        81.0
                     } else {
                         y
                     }
                 },
-                z: 0,
+                z: 0.0,
+                w: 1.0,
             });
         }
 
-        self.planets.push(Planet::new(100, 100, 100, "Test"));
+        self.planets.push(Planet::new(100.0, 100.0, 100.0, "Test"));
     }
 
     pub fn draw(&self) {
@@ -209,39 +211,42 @@ impl Game {
 
     pub fn update_debris(&mut self) {
         let speed: f32 = (self.player_ship.speed as f32).log(10_f32);
+        let delta_x = self.movement.delta_x as i32 as f32;
+        let delta_y = self.movement.delta_y as i32 as f32;
+        let rand = self.rng.f32() * 40.0 - 20.0;
 
         for (_, debris) in self.debris.iter_mut().enumerate() {
-            debris.x = debris.x + self.movement.delta_x as i32 * 2;
-            debris.y = debris.y + self.movement.delta_y as i32 * 2;
-            if debris.x < 80 {
-                debris.x = debris.x - (speed * self.rng.f32() * 2_f32) as i32;
-                if debris.x <= 0 {
-                    debris.x = 80 + self.rng.i32(-20..20) - self.movement.delta_x as i32 * 5;
+            debris.x = debris.x + delta_x * 2.0;
+            debris.y = debris.y + delta_y * 2.0;
+            if debris.x < 80.0 {
+                debris.x = debris.x - (speed * self.rng.f32() * 2_f32);
+                if debris.x <= 0.0 {
+                    debris.x = 80.0 + rand - delta_x * 5.0;
                 }
             }
-            if debris.x > 80 {
-                debris.x = debris.x + (speed * self.rng.f32() * 2_f32) as i32;
-                if debris.x >= 159 {
-                    debris.x = 80 + self.rng.i32(-20..20) - self.movement.delta_x as i32 * 5;
+            if debris.x > 80.0 {
+                debris.x = debris.x + (speed * self.rng.f32() * 2_f32);
+                if debris.x >= 159.0 {
+                    debris.x = 80.0 + rand - delta_x * 5.0;
                 }
             }
-            if debris.y < 80 {
-                debris.y = debris.y - (speed * self.rng.f32() * 2_f32) as i32;
-                if debris.y <= 0 {
-                    debris.y = 80 + self.rng.i32(-20..20) - self.movement.delta_y as i32 * 5;
+            if debris.y < 80.0 {
+                debris.y = debris.y - (speed * self.rng.f32() * 2_f32);
+                if debris.y <= 0.0 {
+                    debris.y = 80.0 + rand - delta_y * 5.0;
                 }
             }
-            if debris.y > 80 {
-                debris.y = debris.y + (speed * self.rng.f32() * 2_f32) as i32;
-                if debris.y >= 159 {
-                    debris.y = 80 + self.rng.i32(-20..20) - self.movement.delta_y as i32 * 5;
+            if debris.y > 80.0 {
+                debris.y = debris.y + (speed * self.rng.f32() * 2_f32);
+                if debris.y >= 159.0 {
+                    debris.y = 80.0 + rand - delta_y * 5.0;
                 }
             }
-            if debris.x == 80 {
-                debris.x = 81;
+            if debris.x == 80.0 {
+                debris.x = 81.0;
             }
-            if debris.y == 80 {
-                debris.y = 81;
+            if debris.y == 80.0 {
+                debris.y = 81.0;
             }
         }
     }
@@ -251,12 +256,12 @@ impl Game {
 
         for (index, star) in self.distant_stars.iter_mut().enumerate() {
             if self.movement.delta_x != DirectionX::Center {
-                star.x = star.x + self.movement.delta_x as i32;
+                star.x = star.x + self.movement.delta_x as i32 as f32;
             }
             if self.movement.delta_y != DirectionY::Center {
-                star.y = star.y + self.movement.delta_y as i32;
+                star.y = star.y + self.movement.delta_y as i32 as f32;
             }
-            if star.x < 0 || star.x > 159 || star.y < 0 || star.y > 159 {
+            if star.x < 0.0 || star.x > 159.0 || star.y < 0.0 || star.y > 159.0 {
                 remove_indexes.push(index);
             }
         }
@@ -267,29 +272,30 @@ impl Game {
                     if self.movement.delta_x == DirectionX::Left
                         && self.movement.delta_y == DirectionY::Center
                     {
-                        159
+                        159.0
                     } else if self.movement.delta_x == DirectionX::Right
                         && self.movement.delta_y == DirectionY::Center
                     {
-                        0
+                        0.0
                     } else {
-                        self.rng.u8(0..159)
+                        self.rng.f32() * 159.0
                     }
-                } as i32,
+                },
                 y: {
                     if self.movement.delta_y == DirectionY::Up
                         && self.movement.delta_x == DirectionX::Center
                     {
-                        159
+                        159.0
                     } else if self.movement.delta_y == DirectionY::Down
                         && self.movement.delta_x == DirectionX::Center
                     {
-                        0
+                        0.0
                     } else {
-                        self.rng.u8(0..159)
+                        self.rng.f32() * 159.0
                     }
-                } as i32,
-                z: 0,
+                },
+                z: 0.0,
+                w: 1.0,
             });
         }
     }
