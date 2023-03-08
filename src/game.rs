@@ -1,5 +1,4 @@
-extern crate alloc;
-use alloc::vec::Vec;
+use alloc::{borrow::ToOwned, vec::Vec};
 
 use fastrand::Rng;
 
@@ -11,6 +10,8 @@ use crate::{
     utils::clamp,
     wasm4::{self, *},
 };
+
+use numtoa::NumToA;
 
 pub struct Buttons {
     up: bool,
@@ -134,11 +135,13 @@ impl Game {
         }
         if self.buttons.two {
             text(b"\x81", 150, 150);
+            let mut buf = [0u8; 32];
+            let s = self.player_ship.speed.numtoa_str(10, &mut buf);
             if self.buttons.up {
-                text("SPD+", 0, 150);
+                text("SPD+ ".to_owned() + s, 0, 150);
             }
             if self.buttons.down {
-                text("SPD-", 0, 150);
+                text("SPD- ".to_owned() + s, 0, 150);
             }
         }
     }

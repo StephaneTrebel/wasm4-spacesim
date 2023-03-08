@@ -1,7 +1,10 @@
 #![no_std]
 
+extern crate alloc;
+
 #[cfg(feature = "buddy-alloc")]
 mod alloc;
+
 mod game;
 mod graphics;
 mod hud;
