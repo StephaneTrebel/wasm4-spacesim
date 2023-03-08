@@ -139,12 +139,15 @@ impl Game {
             let mut buf = [0u8; 32];
             let s = self.player_ship.speed.numtoa_str(10, &mut buf);
             if self.buttons.up {
-                text("SPD+ ".to_owned() + s, 0, 150);
+                text("SPD+ ".to_owned() + s, 1, 150);
             }
             if self.buttons.down {
-                text("SPD- ".to_owned() + s, 0, 150);
+                text("SPD- ".to_owned() + s, 1, 150);
             }
         }
+
+        set_draw_color(0x0040);
+        rect(0, 0, 160, 160, );
     }
 
     pub fn update_pressed_buttons(&mut self) {
