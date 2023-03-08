@@ -84,6 +84,27 @@ impl Game {
                 y: self.rng.u8(0..159) as i32,
             });
         }
+
+        for _ in 0..9 {
+            self.debris.push(Coordinates {
+                x: {
+                    let x = 80 + self.rng.i32(-20..20);
+                    if x == 80 {
+                        81
+                    } else {
+                        x
+                    }
+                },
+                y: {
+                    let y = 80 + self.rng.i32(-20..20);
+                    if y == 80 {
+                        81
+                    } else {
+                        y
+                    }
+                },
+            });
+        }
     }
 
     pub fn draw(&self) {
@@ -174,38 +195,47 @@ impl Game {
     }
 
     pub fn update_debris(&mut self) {
-        let mut remove_indexes: Vec<usize> = Vec::new();
+        let speed: f32 = self.player_ship.speed as f32 / 60_f32;
 
-        let speed = self.player_ship.speed / 30 + 1;
-
-        for (index, debris) in self.debris.iter_mut().enumerate() {
-            debris.x = debris.x + self.movement.delta_x as i32;
-            debris.y = debris.y + self.movement.delta_y as i32;
+        for (_, debris) in self.debris.iter_mut().enumerate() {
+            debris.x = debris.x + self.movement.delta_x as i32 * 2;
+            debris.y = debris.y + self.movement.delta_y as i32 * 2;
             if debris.x < 80 {
-                debris.x = debris.x - speed
+                debris.x = debris.x - (speed * self.rng.i32(0..2) as f32) as i32;
+                if debris.x <= 0 {
+                    debris.x = 80 + self.rng.i32(-20..20) - self.movement.delta_x as i32 * 5;
+                }
+                if debris.x == 80 {
+                    debris.x = 81;
+                }
             }
             if debris.x > 80 {
-                debris.x = debris.x + speed
+                debris.x = debris.x + (speed * self.rng.i32(0..2) as f32) as i32;
+                if debris.x >= 159 {
+                    debris.x = 80 + self.rng.i32(-20..20) - self.movement.delta_x as i32 * 5;
+                    if debris.x == 80 {
+                        debris.x = 81;
+                    }
+                }
             }
             if debris.y < 80 {
-                debris.y = debris.y - speed
+                debris.y = debris.y - (speed * self.rng.i32(0..2) as f32) as i32;
+                if debris.y <= 0 {
+                    debris.y = 80 + self.rng.i32(-20..20) - self.movement.delta_y as i32 * 5;
+                    if debris.y == 80 {
+                        debris.y = 81;
+                    }
+                }
             }
             if debris.y > 80 {
-                debris.y = debris.y + speed
+                debris.y = debris.y + (speed * self.rng.i32(0..2) as f32) as i32;
+                if debris.y >= 159 {
+                    debris.y = 80 + self.rng.i32(-20..20) - self.movement.delta_y as i32 * 5;
+                    if debris.y == 80 {
+                        debris.y = 81;
+                    }
+                }
             }
-            if debris.x < 0 || debris.x > 159 || debris.y < 0 || debris.y > 159 {
-                remove_indexes.push(index);
-            }
-        }
-        for index in remove_indexes {
-            self.debris.remove(index);
-        }
-
-        if self.debris.len() < 10 {
-            self.debris.push(Coordinates {
-                x: 80 + self.rng.i32(-20..20) + 1,
-                y: 80 + self.rng.i32(-20..20) + 1,
-            });
         }
     }
 
