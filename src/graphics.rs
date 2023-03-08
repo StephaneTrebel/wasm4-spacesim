@@ -1,6 +1,11 @@
 use fastrand::Rng;
 
-use crate::{maths::Coordinates, wasm4::*};
+use crate::{
+    maths::{project, Coordinates},
+    planet::Planet,
+    planet_sprite,
+    wasm4::*,
+};
 
 pub fn pixel(x: i32, y: i32, color: u8) {
     if x < 0 || x > 159 {
@@ -38,4 +43,25 @@ pub fn draw_debris(coords: &Coordinates, rng: &Rng) {
     let delta_x = rng.i8(-1..1) as i32;
     let delta_y = rng.i8(-1..1) as i32;
     pixel(coords.x as i32 + delta_x, coords.y as i32 + delta_y, 1);
+}
+
+pub fn draw_planet(planet: &Planet) {
+    if planet.coordinates.z >= 0.0 {
+        let coordinates = project(planet.coordinates);
+        blit(
+            &planet_sprite::PLANET1,
+            (coordinates.x + 80.0) as i32,
+            (coordinates.y + 80.0) as i32,
+            planet_sprite::PLANET1_WIDTH,
+            planet_sprite::PLANET1_HEIGHT,
+            planet_sprite::PLANET1_FLAGS,
+        );
+
+        //print(
+        //"x "..coordinates.x
+        //.." y "..coordinates.y
+        //.." z "..coordinates.z,
+        //0,0+index*6,5)
+        // index+=1
+    }
 }

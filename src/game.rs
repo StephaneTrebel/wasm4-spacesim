@@ -5,7 +5,7 @@ use fastrand::Rng;
 
 use crate::{
     graphics, hud,
-    maths::Coordinates,
+    maths::{rotate_xz, rotate_yz, Coordinates},
     palette::set_draw_color,
     planet::Planet,
     player,
@@ -47,6 +47,7 @@ pub struct Movement {
 
 pub struct Game {
     rng: Rng,
+    theta: f32,
     player_ship: player::PlayerShip,
     current_tick: i32,
     debris: Vec<Coordinates>,
@@ -61,6 +62,7 @@ impl Game {
         let rng = Rng::with_seed(123);
         Self {
             rng,
+            theta: 0.002,
             player_ship: player::PlayerShip::new(),
             current_tick: 0,
             debris: Vec::new(),
@@ -125,7 +127,11 @@ impl Game {
         }
 
         for star in &self.distant_stars {
-            graphics::draw_star(star)
+            graphics::draw_star(star);
+        }
+
+        for planet in &self.planets {
+            graphics::draw_planet(planet);
         }
 
         set_draw_color(0x0043);
@@ -309,6 +315,41 @@ impl Game {
         }
     }
 
+    // it's not the player that
+    // rotates, it's the universe
+    pub fn rotate_planets_xz(&mut self, theta: f32) {
+        for planet in self.planets.iter_mut() {
+            planet.coordinates = rotate_xz(planet.coordinates, theta)
+        }
+    }
+
+    pub fn rotate_planets_yz(&mut self, theta: f32) {
+        for planet in self.planets.iter_mut() {
+            planet.coordinates = rotate_yz(planet.coordinates, theta)
+        }
+    }
+
+    pub fn update_planets(&mut self) {
+        // let mut relative_x = 0;
+        // let mut relative_y = 0;
+        if self.movement.delta_y == DirectionY::Up {
+            // relative_y -= 1;
+            self.rotate_planets_yz(self.theta);
+        }
+        if self.movement.delta_y == DirectionY::Down {
+            // relative_y += 1;
+            self.rotate_planets_yz(-self.theta);
+        }
+        if self.movement.delta_x == DirectionX::Left {
+            // relative_x -= 1;
+            self.rotate_planets_xz(-self.theta);
+        }
+        if self.movement.delta_x == DirectionX::Right {
+            // relative_x += 1;
+            self.rotate_planets_xz(self.theta);
+        }
+    }
+
     pub fn update(&mut self) {
         self.current_tick = self.current_tick + 1;
         self.update_pressed_buttons();
@@ -316,6 +357,7 @@ impl Game {
         self.update_debris();
         self.update_stars();
         self.update_speed();
+        self.update_planets();
         self.draw();
     }
 }

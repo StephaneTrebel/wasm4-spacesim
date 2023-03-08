@@ -10,6 +10,7 @@ mod maths;
 mod palette;
 mod player;
 mod planet;
+mod planet_sprite;
 mod utils;
 mod wasm4;
 

@@ -4,8 +4,8 @@ use alloc::string::{String, ToString};
 use crate::maths::Coordinates;
 
 pub struct Planet {
-    coordinates: Coordinates,
-    name: String,
+    pub coordinates: Coordinates,
+    pub name: String,
 }
 
 impl Planet {
@@ -16,3 +16,4 @@ impl Planet {
         }
     }
 }
+

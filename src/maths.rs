@@ -9,25 +9,25 @@ pub struct Coordinates {
 }
 
 pub fn transform(vertice: Coordinates, matrix: [f32; 16]) -> Coordinates {
-    let w = vertice.x * matrix[4]
-        + vertice.y * matrix[8]
-        + vertice.z * matrix[12]
-        + vertice.w * matrix[16];
+    let w = vertice.x * matrix[3]
+        + vertice.y * matrix[7]
+        + vertice.z * matrix[11]
+        + vertice.w * matrix[15];
     Coordinates {
-        x: (vertice.x * matrix[1]
+        x: (vertice.x * matrix[0]
+            + vertice.y * matrix[4]
+            + vertice.z * matrix[8]
+            + vertice.w * matrix[12])
+            / w,
+        y: (vertice.x * matrix[1]
             + vertice.y * matrix[5]
             + vertice.z * matrix[9]
             + vertice.w * matrix[13])
             / w,
-        y: (vertice.x * matrix[2]
+        z: (vertice.x * matrix[2]
             + vertice.y * matrix[6]
             + vertice.z * matrix[10]
             + vertice.w * matrix[14])
-            / w,
-        z: (vertice.x * matrix[3]
-            + vertice.y * matrix[7]
-            + vertice.z * matrix[11]
-            + vertice.w * matrix[15])
             / w,
         w: 1.0,
     }
