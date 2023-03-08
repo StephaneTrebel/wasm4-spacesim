@@ -7,6 +7,7 @@ use crate::{
     graphics, hud,
     maths::Coordinates,
     palette::set_draw_color,
+    planet::Planet,
     player,
     utils::clamp,
     wasm4::{self, *},
@@ -52,6 +53,7 @@ pub struct Game {
     distant_stars: Vec<Coordinates>,
     buttons: Buttons,
     movement: Movement,
+    planets: Vec<Planet>,
 }
 
 impl Game {
@@ -75,11 +77,11 @@ impl Game {
                 delta_x: DirectionX::Center,
                 delta_y: DirectionY::Center,
             },
+            planets: Vec::new(),
         }
     }
 
     pub fn start(&mut self) {
-        self.distant_stars = Vec::new();
         for _ in 0..9 {
             self.distant_stars.push(Coordinates {
                 x: self.rng.u8(0..159) as i32,
@@ -109,6 +111,8 @@ impl Game {
                 z: 0,
             });
         }
+
+        self.planets.push(Planet::new(100, 100, 100, "Test"));
     }
 
     pub fn draw(&self) {

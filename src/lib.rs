@@ -9,6 +9,7 @@ mod hud;
 mod maths;
 mod palette;
 mod player;
+mod planet;
 mod utils;
 mod wasm4;
 
