@@ -84,6 +84,7 @@ impl Game {
             self.distant_stars.push(Coordinates {
                 x: self.rng.u8(0..159) as i32,
                 y: self.rng.u8(0..159) as i32,
+                z: 0,
             });
         }
 
@@ -105,6 +106,7 @@ impl Game {
                         y
                     }
                 },
+                z: 0,
             });
         }
     }
@@ -147,7 +149,7 @@ impl Game {
         }
 
         set_draw_color(0x0040);
-        rect(0, 0, 160, 160, );
+        rect(0, 0, 160, 160);
     }
 
     pub fn update_pressed_buttons(&mut self) {
@@ -283,6 +285,7 @@ impl Game {
                         self.rng.u8(0..159)
                     }
                 } as i32,
+                z: 0,
             });
         }
     }
