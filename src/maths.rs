@@ -1,5 +1,3 @@
-extern crate alloc;
-
 #[derive(Clone, Copy, PartialEq)]
 pub struct Coordinates {
     pub x: f32,
@@ -41,17 +39,14 @@ pub fn rotate_xz(vertice: Coordinates, theta: f32) -> Coordinates {
             0.0,
             -theta.sin(),
             0.0,
-
             0.0,
             1.0,
             0.0,
             0.0,
-
             theta.sin(),
             0.0,
             theta.cos(),
             0.0,
-
             0.0,
             0.0,
             0.0,
@@ -106,4 +101,12 @@ pub fn project(vertice: Coordinates) -> Coordinates {
             0.0,
         ],
     )
+}
+
+// compute distance between a
+// player and anything
+pub fn distance(coords: Coordinates) -> f32 {
+    (coords.x.powi(2) + coords.y.powi(2) + coords.z.powi(2))
+        .sqrt()
+        .floor()
 }

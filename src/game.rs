@@ -5,7 +5,7 @@ use fastrand::Rng;
 
 use crate::{
     graphics, hud,
-    maths::{rotate_xz, rotate_yz, Coordinates},
+    maths::Coordinates,
     palette::set_draw_color,
     planet::Planet,
     player,
@@ -41,8 +41,8 @@ pub enum DirectionY {
 }
 
 pub struct Movement {
-    delta_x: DirectionX,
-    delta_y: DirectionY,
+    pub delta_x: DirectionX,
+    pub delta_y: DirectionY,
 }
 
 pub struct Game {
@@ -62,7 +62,7 @@ impl Game {
         let rng = Rng::with_seed(123);
         Self {
             rng,
-            theta: 0.002,
+            theta: 0.01,
             player_ship: player::PlayerShip::new(),
             current_tick: 0,
             debris: Vec::new(),
@@ -116,7 +116,7 @@ impl Game {
             });
         }
 
-        self.planets.push(Planet::new(100.0, 100.0, 100.0, "Test"));
+        self.planets.push(Planet::new(-50.0, -50.0, 500.0, "Test"));
     }
 
     pub fn draw(&self) {
@@ -145,12 +145,14 @@ impl Game {
         );
 
         set_draw_color(0x0013);
+
+        let mut buf = [0u8; 32];
+
         if self.buttons.one {
             text(b"\x80", 140, 150);
         }
         if self.buttons.two {
             text(b"\x81", 150, 150);
-            let mut buf = [0u8; 32];
             let s = self.player_ship.speed.numtoa_str(10, &mut buf);
             if self.buttons.up {
                 text("SPD+ ".to_owned() + s, 1, 150);
@@ -315,38 +317,9 @@ impl Game {
         }
     }
 
-    // it's not the player that
-    // rotates, it's the universe
-    pub fn rotate_planets_xz(&mut self, theta: f32) {
-        for planet in self.planets.iter_mut() {
-            planet.coordinates = rotate_xz(planet.coordinates, theta)
-        }
-    }
-
-    pub fn rotate_planets_yz(&mut self, theta: f32) {
-        for planet in self.planets.iter_mut() {
-            planet.coordinates = rotate_yz(planet.coordinates, theta)
-        }
-    }
-
     pub fn update_planets(&mut self) {
-        // let mut relative_x = 0;
-        // let mut relative_y = 0;
-        if self.movement.delta_y == DirectionY::Up {
-            // relative_y -= 1;
-            self.rotate_planets_yz(self.theta);
-        }
-        if self.movement.delta_y == DirectionY::Down {
-            // relative_y += 1;
-            self.rotate_planets_yz(-self.theta);
-        }
-        if self.movement.delta_x == DirectionX::Left {
-            // relative_x -= 1;
-            self.rotate_planets_xz(-self.theta);
-        }
-        if self.movement.delta_x == DirectionX::Right {
-            // relative_x += 1;
-            self.rotate_planets_xz(self.theta);
+        for planet in self.planets.iter_mut() {
+            planet.update(&self.movement, self.theta, self.player_ship.speed);
         }
     }
 

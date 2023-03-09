@@ -2,8 +2,9 @@ use fastrand::Rng;
 
 use crate::{
     maths::{project, Coordinates},
+    palette::set_draw_color,
     planet::Planet,
-    planet_sprite,
+    planet_sprite::{get_colors, get_flags, get_height, get_level, get_sprite, get_width},
     wasm4::*,
 };
 
@@ -48,20 +49,16 @@ pub fn draw_debris(coords: &Coordinates, rng: &Rng) {
 pub fn draw_planet(planet: &Planet) {
     if planet.coordinates.z >= 0.0 {
         let coordinates = project(planet.coordinates);
+        let level = get_level(planet.distance);
+
+        set_draw_color(get_colors());
         blit(
-            &planet_sprite::PLANET1,
+            &get_sprite(&level),
             (coordinates.x + 80.0) as i32,
             (coordinates.y + 80.0) as i32,
-            planet_sprite::PLANET1_WIDTH,
-            planet_sprite::PLANET1_HEIGHT,
-            planet_sprite::PLANET1_FLAGS,
+            get_width(&level),
+            get_height(&level),
+            get_flags(&level),
         );
-
-        //print(
-        //"x "..coordinates.x
-        //.." y "..coordinates.y
-        //.." z "..coordinates.z,
-        //0,0+index*6,5)
-        // index+=1
     }
 }
