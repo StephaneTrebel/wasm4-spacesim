@@ -54,8 +54,8 @@ pub fn draw_planet(planet: &Planet) {
         set_draw_color(get_colors());
         blit(
             &get_sprite(&level),
-            (coordinates.x + 80.0) as i32,
-            (coordinates.y + 80.0) as i32,
+            (coordinates.x + 80.0 - get_width(&level) as f32 / 2.0) as i32,
+            (coordinates.y + 80.0 - get_height(&level) as f32 / 2.0) as i32,
             get_width(&level),
             get_height(&level),
             get_flags(&level),

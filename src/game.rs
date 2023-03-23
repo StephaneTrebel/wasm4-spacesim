@@ -9,19 +9,18 @@ use crate::{
     palette::set_draw_color,
     planet::Planet,
     player,
-    utils::clamp,
     wasm4::{self, *},
 };
 
 use numtoa::NumToA;
 
 pub struct Buttons {
-    up: bool,
-    down: bool,
-    left: bool,
-    right: bool,
-    two: bool,
-    one: bool,
+    pub up: bool,
+    pub down: bool,
+    pub left: bool,
+    pub right: bool,
+    pub two: bool,
+    pub one: bool,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -116,7 +115,8 @@ impl Game {
             });
         }
 
-        self.planets.push(Planet::new(-50.0, -50.0, 500.0, "Test"));
+        self.planets
+            .push(Planet::new(-500.0, -500.0, 2000.0, "Test"));
     }
 
     pub fn draw(&self) {
@@ -308,15 +308,6 @@ impl Game {
         }
     }
 
-    pub fn update_speed(&mut self) {
-        if self.buttons.two && self.buttons.up {
-            self.player_ship.speed = clamp(0, self.player_ship.speed + 1, 150);
-        }
-        if self.buttons.two && self.buttons.down {
-            self.player_ship.speed = clamp(0, self.player_ship.speed - 1, 150);
-        }
-    }
-
     pub fn update_planets(&mut self) {
         for planet in self.planets.iter_mut() {
             planet.update(&self.movement, self.theta, self.player_ship.speed);
@@ -329,7 +320,7 @@ impl Game {
         self.update_movement();
         self.update_debris();
         self.update_stars();
-        self.update_speed();
+        self.player_ship.update_speed(&self.buttons);
         self.update_planets();
         self.draw();
     }

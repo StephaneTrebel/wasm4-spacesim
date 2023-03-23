@@ -1,4 +1,4 @@
-use crate::maths::Coordinates;
+use crate::{game::Buttons, maths::Coordinates, utils::clamp};
 
 pub struct PlayerShip {
     pub position: Coordinates,
@@ -15,6 +15,15 @@ impl PlayerShip {
                 w: 1.0,
             },
             speed: 100,
+        }
+    }
+
+    pub fn update_speed(&mut self, buttons: &Buttons) {
+        if buttons.two && buttons.up {
+            self.speed = clamp(0, self.speed + 1, 150);
+        }
+        if buttons.two && buttons.down {
+            self.speed = clamp(0, self.speed - 1, 150);
         }
     }
 }
