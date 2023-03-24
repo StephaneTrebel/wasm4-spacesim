@@ -20,10 +20,10 @@ impl PlayerShip {
 
     pub fn update_speed(&mut self, buttons: &Buttons) {
         if buttons.two && buttons.up {
-            self.speed = clamp(0, self.speed + 1, 150);
+            self.speed = clamp(0, self.speed + 1, 500);
         }
         if buttons.two && buttons.down {
-            self.speed = clamp(0, self.speed - 1, 150);
+            self.speed = clamp(0, self.speed - 1, 500);
         }
     }
 }

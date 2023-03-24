@@ -4,7 +4,7 @@ use crate::{
     maths::{project, Coordinates},
     palette::set_draw_color,
     planet::Planet,
-    planet_sprite::{get_colors, get_flags, get_height, get_level, get_sprite, get_width},
+    planet_sprite::{get_colors, get_flags, get_height, get_level, get_sprite, get_width, Level},
     wasm4::*,
 };
 
@@ -61,4 +61,17 @@ pub fn draw_planet(planet: &Planet) {
             get_flags(&level),
         );
     }
+}
+
+pub fn draw_planet_landed(_planet: &Planet) {
+    let level = Level::ONE;
+    set_draw_color(get_colors());
+    blit(
+        &get_sprite(&level),
+        0,
+        0,
+        get_width(&level),
+        get_height(&level),
+        get_flags(&level),
+    );
 }
