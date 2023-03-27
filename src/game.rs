@@ -63,6 +63,8 @@ pub enum PlanetMenuOption {
     SeePlanet = 2,
 }
 
+pub type PlanetTargeting = Option<usize>;
+
 pub struct Game {
     rng: Rng,
     theta: f32,
@@ -75,10 +77,13 @@ pub struct Game {
     movement: Movement,
     planets: Vec<Planet>,
     current_mode: GameMode,
+    nearest_planet_distance: f32,
+    targeting_planet: PlanetTargeting,
     selected_planet_menu_option: PlanetMenuOption,
 }
 
 const MAXIMUM_DISTANCE_FOR_LANDING: f32 = 100.0;
+const MAXIMUM_DISTANCE_FOR_TARGETING: f32 = 5000.0;
 
 fn is_flying(gamemode: &GameMode) -> bool {
     match gamemode {
@@ -120,6 +125,8 @@ impl Game {
             },
             planets: Vec::new(),
             current_mode: GameMode::Flying,
+            nearest_planet_distance: 0.0,
+            targeting_planet: None,
             selected_planet_menu_option: PlanetMenuOption::FlyOut,
         }
     }
@@ -174,8 +181,8 @@ impl Game {
                     graphics::draw_star(star);
                 }
 
-                for planet in &self.planets {
-                    graphics::draw_planet(planet);
+                for (index, planet) in self.planets.iter().enumerate() {
+                    graphics::draw_planet(&planet, self.targeting_planet == Some(index));
                 }
 
                 set_draw_color(0x0043);
@@ -189,9 +196,7 @@ impl Game {
                 );
 
                 set_draw_color(0x0013);
-
                 let mut buf = [0u8; 32];
-
                 if self.button_just_pressed.one {
                     text(b"\x80", 140, 150);
                 }
@@ -462,21 +467,29 @@ impl Game {
         if is_flying(&self.current_mode) {
             let mut tmp_distance: f32;
             let mut nearest_distance: f32 = MAX;
-            let mut tmp_nearest: usize = 0;
+            let mut tmp_landing_possible_on_index: usize = 0;
+            let mut tmp_targeting_planet_index: usize = 0;
             for (index, planet) in self.planets.iter_mut().enumerate() {
                 planet.update(&self.movement, self.theta, self.player_ship.speed);
                 tmp_distance = distance(planet.coordinates);
                 if tmp_distance < nearest_distance {
-                    tmp_nearest = index;
+                    tmp_landing_possible_on_index = index;
+                    tmp_targeting_planet_index = index;
                     nearest_distance = tmp_distance;
                 }
             }
             if nearest_distance < MAXIMUM_DISTANCE_FOR_LANDING {
-                self.current_mode = GameMode::LandingPossible(tmp_nearest);
+                self.current_mode = GameMode::LandingPossible(tmp_landing_possible_on_index);
             }
             if nearest_distance > MAXIMUM_DISTANCE_FOR_LANDING {
                 self.current_mode = GameMode::Flying;
             }
+            if self.nearest_planet_distance < MAXIMUM_DISTANCE_FOR_TARGETING {
+                self.targeting_planet = Some(tmp_targeting_planet_index);
+            } else {
+                self.targeting_planet = None;
+            }
+            self.nearest_planet_distance = nearest_distance;
         }
     }
 

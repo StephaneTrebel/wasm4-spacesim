@@ -22,7 +22,7 @@ impl Planet {
             distance: distance(coords),
         }
     }
-    //
+
     // it's not the player that
     // rotates, it's the universe
     pub fn rotate_xz(&mut self, theta: f32) {
