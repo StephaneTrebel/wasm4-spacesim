@@ -17,10 +17,10 @@ pub enum Level {
 
 pub fn get_level(distance: f32) -> Level {
     match distance.floor() as u32 {
-        0..=100 => Level::ONE,
-        101..=1000 => Level::TWO,
-        101..=2000 => Level::THREE,
-        201..=3000 => Level::FOUR,
+        0..=500 => Level::ONE,
+        501..=1000 => Level::TWO,
+        1001..=2000 => Level::THREE,
+        2001..=3000 => Level::FOUR,
         _ => Level::FIVE,
     }
 }
