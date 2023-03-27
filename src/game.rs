@@ -191,10 +191,10 @@ impl Game {
                     text(b"\x81", 150, 150);
                     let s = self.player_ship.speed.numtoa_str(10, &mut buf);
                     if self.button_just_pressed.up {
-                        text("SPD+ ".to_owned() + s, 1, 500);
+                        text("SPD+ ".to_owned() + s, 1, 150);
                     }
                     if self.button_just_pressed.down {
-                        text("SPD- ".to_owned() + s, 1, 500);
+                        text("SPD- ".to_owned() + s, 1, 150);
                     }
                 }
 
