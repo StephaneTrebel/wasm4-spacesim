@@ -70,6 +70,7 @@ pub struct Game {
     theta: f32,
     player_ship: player::PlayerShip,
     current_tick: i32,
+    cooldown_tick: i32,
     debris: Vec<Coordinates>,
     distant_stars: Vec<Coordinates>,
     button_just_pressed: Buttons,
@@ -101,6 +102,7 @@ impl Game {
             theta: 0.01,
             player_ship: player::PlayerShip::new(),
             current_tick: 0,
+            cooldown_tick: 0,
             debris: Vec::new(),
             distant_stars: Vec::new(),
             button_just_pressed: Buttons {
@@ -347,26 +349,35 @@ impl Game {
         if let GameMode::LandingPossible(planet_index) = &self.current_mode {
             if self.button_just_pressed.one {
                 self.current_mode = GameMode::Landed(*planet_index);
+                self.cooldown_tick = 10;
             }
         }
 
         if let GameMode::Landed(_) = &self.current_mode {
-            if self.current_tick % 10 == 0 {
-                let mut tmp_select = self.selected_planet_menu_option.clone() as u8;
-                if self.button_pressed_this_frame.down {
-                    if tmp_select < 2 {
-                        tmp_select = tmp_select + 1;
-                    }
+            let mut tmp_select = self.selected_planet_menu_option.clone() as u8;
+            if self.button_pressed_this_frame.down {
+                if tmp_select < 2 {
+                    tmp_select = tmp_select + 1;
                 }
-                if self.button_pressed_this_frame.up {
-                    if tmp_select > 0 {
-                        tmp_select = tmp_select - 1;
-                    }
+            }
+            if self.button_pressed_this_frame.up {
+                if tmp_select > 0 {
+                    tmp_select = tmp_select - 1;
                 }
-                self.selected_planet_menu_option = match tmp_select {
-                    0 => PlanetMenuOption::FlyOut,
-                    1 => PlanetMenuOption::Buy,
-                    _ => PlanetMenuOption::SeePlanet,
+            }
+            self.selected_planet_menu_option = match tmp_select {
+                0 => PlanetMenuOption::FlyOut,
+                1 => PlanetMenuOption::Buy,
+                _ => PlanetMenuOption::SeePlanet,
+            };
+
+            if self.button_just_pressed.one && self.cooldown_tick == 0 {
+                match self.selected_planet_menu_option {
+                    PlanetMenuOption::FlyOut => {
+                        self.current_mode = GameMode::Flying;
+                        self.cooldown_tick = 10;
+                    }
+                    _ => {}
                 }
             }
         }
@@ -478,7 +489,7 @@ impl Game {
                     nearest_distance = tmp_distance;
                 }
             }
-            if nearest_distance < MAXIMUM_DISTANCE_FOR_LANDING {
+            if nearest_distance < MAXIMUM_DISTANCE_FOR_LANDING && self.cooldown_tick == 0 {
                 self.current_mode = GameMode::LandingPossible(tmp_landing_possible_on_index);
             }
             if nearest_distance > MAXIMUM_DISTANCE_FOR_LANDING {
@@ -494,7 +505,10 @@ impl Game {
     }
 
     pub fn update(&mut self) {
-        self.current_tick = self.current_tick + 1;
+        self.current_tick -= 1;
+        if self.cooldown_tick > 0 {
+            self.cooldown_tick -= 1;
+        }
         self.update_pressed_buttons();
         self.update_movement();
         self.update_debris();
