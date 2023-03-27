@@ -80,6 +80,14 @@ pub struct Game {
 
 const MAXIMUM_DISTANCE_FOR_LANDING: f32 = 100.0;
 
+fn is_flying(gamemode: &GameMode) -> bool {
+    match gamemode {
+        GameMode::Flying => true,
+        GameMode::LandingPossible(_) => true,
+        _ => false,
+    }
+}
+
 impl Game {
     pub fn new() -> Self {
         let rng = Rng::with_seed(123);
@@ -312,7 +320,7 @@ impl Game {
     }
 
     pub fn update_movement(&mut self) {
-        if self.current_mode == GameMode::Flying {
+        if is_flying(&self.current_mode) {
             self.movement.delta_x = DirectionX::Center;
             self.movement.delta_y = DirectionY::Center;
             if !self.button_just_pressed.two && !self.button_just_pressed.one {
@@ -451,7 +459,7 @@ impl Game {
     }
 
     pub fn update_planets(&mut self) {
-        if self.current_mode == GameMode::Flying {
+        if is_flying(&self.current_mode) {
             let mut tmp_distance: f32;
             let mut nearest_distance: f32 = MAX;
             let mut tmp_nearest: usize = 0;
@@ -465,6 +473,9 @@ impl Game {
             }
             if nearest_distance < MAXIMUM_DISTANCE_FOR_LANDING {
                 self.current_mode = GameMode::LandingPossible(tmp_nearest);
+            }
+            if nearest_distance > MAXIMUM_DISTANCE_FOR_LANDING {
+                self.current_mode = GameMode::Flying;
             }
         }
     }
