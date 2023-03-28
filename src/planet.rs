@@ -2,10 +2,9 @@ extern crate alloc;
 use alloc::string::{String, ToString};
 
 use crate::{
-    game::{DirectionX, DirectionY, Movement},
+    gamemode_flying::{DirectionX, DirectionY, Movement},
     maths::{distance, rotate_xz, rotate_yz, Coordinates},
 };
-
 
 pub struct Planet {
     pub coordinates: Coordinates,
