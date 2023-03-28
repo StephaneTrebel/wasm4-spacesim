@@ -13,8 +13,8 @@ You fly a spaceship in the vast and empty universe
 
 Commands:
 - ↑, ↓, ←, → : Yaw and Pitch the spaceship
-- `X` doesn't do anything for the moment
-- `Z` + either ↑ or ↓ accelerates/decelerates
+- <PRIMARY BUTTON> (mostly <SPACE>) confirm some actions (you'll be notified when it can be used)
+- <SECONDARY BUTTON> (for me it's `À` but it may be `W` or `Z`) combined with either ↑ or ↓ accelerates/decelerates
 
 ## Building
 
