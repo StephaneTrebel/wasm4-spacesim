@@ -1,6 +1,6 @@
 use crate::{game::Buttons, maths::Coordinates, utils::clamp};
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub struct PlayerShip {
     pub position: Coordinates,
     pub speed: i32,

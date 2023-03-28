@@ -6,6 +6,7 @@ use crate::{
     maths::{distance, rotate_xz, rotate_yz, Coordinates},
 };
 
+#[derive(Clone)]
 pub struct Planet {
     pub coordinates: Coordinates,
     pub name: String,

@@ -1,5 +1,3 @@
-use core::mem::take;
-
 use crate::{
     gamemode_flying::GameModeFlying,
     wasm4::{BUTTON_1, BUTTON_2, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_UP, GAMEPAD1},
@@ -17,13 +15,8 @@ pub struct Buttons {
 }
 
 pub enum GameMode {
+    None, // Limbo zone while everything is loading
     Flying(GameModeFlying),
-}
-
-impl Default for GameMode {
-    fn default() -> Self {
-        GameMode::Flying(GameModeFlying::new())
-    }
 }
 
 #[derive(PartialEq, Eq, Clone)]
@@ -41,12 +34,6 @@ pub struct Game {
     button_pressed_this_frame: Buttons,
     current_mode: GameMode,
     selected_planet_menu_option: PlanetMenuOption,
-}
-
-fn is_flying(gamemode: &GameMode) -> bool {
-    match gamemode {
-        GameMode::Flying(_) => true,
-    }
 }
 
 impl Game {
@@ -70,14 +57,17 @@ impl Game {
                 two: false,
                 one: false,
             },
-            current_mode: GameMode::Flying(GameModeFlying::new()),
+            current_mode: GameMode::None,
             selected_planet_menu_option: PlanetMenuOption::FlyOut,
         }
     }
 
     pub fn start(&mut self) {
-        match take(&mut self.current_mode) {
-            GameMode::Flying(mut mode) => mode.start(),
+        match &mut self.current_mode {
+            GameMode::None => {
+                self.current_mode = GameMode::Flying(GameModeFlying::new());
+            }
+            _ => {}
         }
     }
 
@@ -202,14 +192,12 @@ impl Game {
     }
 
     pub fn update(&mut self) {
-        self.current_tick -= 1;
-        if self.cooldown_tick > 0 {
-            self.cooldown_tick -= 1;
-        }
         self.update_pressed_buttons();
-
-        match take(&mut self.current_mode) {
-            GameMode::Flying(mut mode) => mode.update(&self.button_just_pressed),
+        match &mut self.current_mode {
+            GameMode::Flying(mode) => {
+                self.current_mode = GameMode::Flying(mode.update(&self.button_just_pressed));
+            }
+            _ => {}
         }
     }
 }
