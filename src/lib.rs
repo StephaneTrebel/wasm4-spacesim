@@ -5,6 +5,7 @@ mod alloc;
 
 mod game;
 mod gamemode_flying;
+mod gamemode_landed;
 mod graphics;
 mod hud;
 mod maths;
