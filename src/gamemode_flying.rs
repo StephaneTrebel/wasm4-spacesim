@@ -41,17 +41,15 @@ pub struct Movement {
     pub delta_y: DirectionY,
 }
 
-pub type PlanetIndex = usize;
-
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, PartialEq)]
 pub enum FlyingMode {
     Flying,
-    LandingPossible(PlanetIndex),
+    LandingPossible(Planet),
 }
 
 pub type PlanetTargeting = Option<usize>;
 
-fn update_movement(mode: &mut GameModeFlying, buttons: &Buttons) -> Option<PlanetIndex> {
+fn update_movement(mode: &mut GameModeFlying, buttons: &Buttons) -> Option<Planet> {
     mode.movement.delta_x = DirectionX::Center;
     mode.movement.delta_y = DirectionY::Center;
     if !buttons.two && !buttons.one {
@@ -68,8 +66,8 @@ fn update_movement(mode: &mut GameModeFlying, buttons: &Buttons) -> Option<Plane
             mode.movement.delta_x = DirectionX::Right;
         }
     }
-    if let FlyingMode::LandingPossible(planet_index) = mode.current_flying_mode {
-        Some(planet_index.to_owned())
+    if let FlyingMode::LandingPossible(planet) = &mode.current_flying_mode {
+        Some(planet.clone())
     } else {
         None
     }
@@ -210,8 +208,8 @@ fn draw(mode: &GameModeFlying, buttons: &Buttons) {
     set_draw_color(0x0040);
     rect(0, 0, 160, 160);
 
-    if let FlyingMode::LandingPossible(planet_index) = &mode.current_flying_mode {
-        let name = mode.planets[*planet_index].name.clone();
+    if let FlyingMode::LandingPossible(planet) = &mode.current_flying_mode {
+        let name = planet.name.clone();
         set_draw_color(0x0012);
         text(
             "LAND ON ".to_owned() + &name + " ?",
@@ -225,13 +223,13 @@ fn draw(mode: &GameModeFlying, buttons: &Buttons) {
 fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32) {
     let mut tmp_distance: f32;
     let mut nearest_distance: f32 = MAX;
-    let mut tmp_landing_possible_on_index: usize = 0;
+    let mut tmp_planet_landing_possible: Option<&Planet> = None;
     let mut tmp_targeting_planet_index: usize = 0;
     for (index, planet) in mode.planets.iter_mut().enumerate() {
         planet.update(&mode.movement, mode.theta, mode.player_ship.speed);
         tmp_distance = distance(planet.coordinates);
         if tmp_distance < nearest_distance {
-            tmp_landing_possible_on_index = index;
+            tmp_planet_landing_possible = Some(planet);
             tmp_targeting_planet_index = index;
             nearest_distance = tmp_distance;
         }
@@ -239,7 +237,8 @@ fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32) {
 
     // TODO
     if nearest_distance < MAXIMUM_DISTANCE_FOR_LANDING && cooldown_tick == 0 {
-        mode.current_flying_mode = FlyingMode::LandingPossible(tmp_landing_possible_on_index);
+        mode.current_flying_mode =
+            FlyingMode::LandingPossible(tmp_planet_landing_possible.unwrap().clone());
     }
     if nearest_distance > MAXIMUM_DISTANCE_FOR_LANDING {
         mode.current_flying_mode = FlyingMode::Flying;
@@ -325,7 +324,7 @@ impl GameModeFlying {
 
     pub fn copy(&self) -> Self {
         Self {
-            current_flying_mode: self.current_flying_mode,
+            current_flying_mode: self.current_flying_mode.clone(),
             debris: self.debris.clone(),
             distant_stars: self.distant_stars.clone(),
             movement: Movement {
@@ -341,7 +340,7 @@ impl GameModeFlying {
         }
     }
 
-    pub fn update(&self, buttons: &Buttons, cooldown_tick: i32) -> (Self, Option<PlanetIndex>) {
+    pub fn update(&self, buttons: &Buttons, cooldown_tick: i32) -> (Self, Option<Planet>) {
         let mut new_instance = self.copy();
         let should_land = update_movement(&mut new_instance, buttons);
         update_debris(&mut new_instance);

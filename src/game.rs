@@ -134,10 +134,9 @@ impl Game {
             GameMode::Flying(mode) => {
                 let (new_mode, should_land) = mode.update(&self.button_just_pressed, self.cooldown_tick);
                 self.current_mode = GameMode::Flying(new_mode);
-                if let Some(_planet_index) = should_land {
+                if let Some(planet) = landingpossible_planet {
                     if self.button_just_pressed.one {
-                        // TODO self.current_mode =
-                        // GameMode::Landed(GameModeLanded::new(self.planets[planet_index]));
+                        self.current_mode = GameMode::Landed(GameModeLanded::new(planet.clone()));
                         self.cooldown_tick = 10;
                     }
                 }

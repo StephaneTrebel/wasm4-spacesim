@@ -1,12 +1,12 @@
 extern crate alloc;
-use alloc::string::{String, ToString};
+use alloc::string::{ToString, String};
 
 use crate::{
     gamemode_flying::{DirectionX, DirectionY, Movement},
     maths::{distance, rotate_xz, rotate_yz, Coordinates},
 };
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Planet {
     pub coordinates: Coordinates,
     pub name: String,
