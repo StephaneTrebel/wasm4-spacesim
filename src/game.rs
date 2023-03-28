@@ -1,6 +1,6 @@
 use crate::{
     gamemode_flying::GameModeFlying,
-    // gamemode_landed::GameModeLanded,
+    gamemode_landed::GameModeLanded,
     wasm4::{BUTTON_1, BUTTON_2, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_UP, GAMEPAD1},
 };
 
@@ -18,11 +18,10 @@ pub struct Buttons {
 pub enum GameMode {
     None, // Limbo zone while everything is loading
     Flying(GameModeFlying),
-    // Landed(GameModeLanded),
+    Landed(GameModeLanded),
 }
 
 pub struct Game {
-    // current_tick: i32,
     cooldown_tick: i32,
     button_just_pressed: Buttons,
     button_pressed_this_frame: Buttons,
@@ -32,7 +31,6 @@ pub struct Game {
 impl Game {
     pub fn new() -> Self {
         Self {
-            // current_tick: 0,
             cooldown_tick: 0,
             button_just_pressed: Buttons {
                 up: false,
@@ -129,11 +127,16 @@ impl Game {
     }
 
     pub fn update(&mut self) {
+        if self.cooldown_tick > 0 {
+            self.cooldown_tick -= 1;
+        }
         self.update_pressed_buttons();
         match &mut self.current_mode {
             GameMode::Flying(mode) => {
-                let (new_mode, should_land) = mode.update(&self.button_just_pressed, self.cooldown_tick);
+                let (new_mode, landingpossible_planet) =
+                    mode.update(&self.button_just_pressed, self.cooldown_tick);
                 self.current_mode = GameMode::Flying(new_mode);
+                // Handle game mode transition
                 if let Some(planet) = landingpossible_planet {
                     if self.button_just_pressed.one {
                         self.current_mode = GameMode::Landed(GameModeLanded::new(planet.clone()));
@@ -141,7 +144,21 @@ impl Game {
                     }
                 }
             }
-            // GameMode::Landed(_planet_index) => {}
+            GameMode::Landed(mode) => {
+                let (new_mode, should_flyout) = mode.update(
+                    &self.button_just_pressed,
+                    &self.button_pressed_this_frame,
+                    self.cooldown_tick,
+                );
+                self.current_mode = GameMode::Landed(new_mode);
+                // Handle game mode transition
+                if should_flyout {
+                    // TODO Replace ::new with a factory that will create a flying mode
+                    // from the current planet and with the current ship
+                    self.current_mode = GameMode::Flying(GameModeFlying::new());
+                    self.cooldown_tick = 10;
+                }
+            }
             _ => {}
         };
     }

@@ -1,4 +1,6 @@
-use crate::{game::Buttons, graphics, palette::set_draw_color, planet::Planet, wasm4::*};
+use crate::{
+    game::Buttons, graphics, palette::set_draw_color, planet::Planet, planet_hud, wasm4::*,
+};
 
 #[derive(PartialEq, Eq, Clone)]
 #[repr(i8)]
@@ -8,14 +10,19 @@ pub enum PlanetMenuOption {
     SeePlanet = 2,
 }
 
-fn update_movement(mut mode: &mut GameModeLanded, buttons: &Buttons) {
+fn update_movement(
+    mut mode: &mut GameModeLanded,
+    just_pressed: &Buttons,
+    pressed_this_frame: &Buttons,
+    cooldown_tick: i32,
+) -> bool {
     let mut tmp_select = mode.selected_planet_menu_option.clone() as u8;
-    if buttons.down {
+    if pressed_this_frame.down {
         if tmp_select < 2 {
             tmp_select = tmp_select + 1;
         }
     }
-    if buttons.up {
+    if pressed_this_frame.up {
         if tmp_select > 0 {
             tmp_select = tmp_select - 1;
         }
@@ -26,20 +33,28 @@ fn update_movement(mut mode: &mut GameModeLanded, buttons: &Buttons) {
         _ => PlanetMenuOption::SeePlanet,
     };
 
-    // if buttons.one && mode.cooldown_tick == 0 {
-    // match mode.selected_planet_menu_option {
-    // PlanetMenuOption::FlyOut => {
-    // mode.current_mode = GameMode::Flying;
-    // mode.cooldown_tick = 10;
-    // }
-    // _ => {}
-    // }
-    // }
+    if just_pressed.one && cooldown_tick == 0 {
+        match mode.selected_planet_menu_option {
+            PlanetMenuOption::FlyOut => return true,
+            _ => return false,
+        }
+    }
+    false
 }
 
 fn draw(mode: &GameModeLanded) {
     set_draw_color(0x0001);
     graphics::draw_planet_landed(&mode.planet);
+
+    set_draw_color(0x0143);
+    blit(
+        &planet_hud::PLANET_HUD,
+        20,
+        20,
+        planet_hud::PLANET_HUD_WIDTH,
+        planet_hud::PLANET_HUD_HEIGHT,
+        planet_hud::PLANET_HUD_FLAGS,
+    );
 
     set_draw_color(0x0012);
     text("Fly out", 37, 27);
@@ -78,10 +93,20 @@ impl GameModeLanded {
         }
     }
 
-    pub fn update(&self, buttons: &Buttons) -> Self {
+    pub fn update(
+        &self,
+        just_pressed: &Buttons,
+        pressed_this_frame: &Buttons,
+        cooldown_tick: i32,
+    ) -> (Self, bool) {
         let mut new_instance = self.copy();
-        update_movement(&mut new_instance, buttons);
+        let should_flyout = update_movement(
+            &mut new_instance,
+            just_pressed,
+            pressed_this_frame,
+            cooldown_tick,
+        );
         draw(&new_instance);
-        new_instance
+        (new_instance, should_flyout)
     }
 }
