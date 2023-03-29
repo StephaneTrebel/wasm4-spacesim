@@ -17,7 +17,7 @@ use crate::{
 
 use numtoa::NumToA;
 
-const MAXIMUM_DISTANCE_FOR_LANDING: f32 = 10000.0;
+const MAXIMUM_DISTANCE_FOR_LANDING: f32 = 100.0;
 const MAXIMUM_DISTANCE_FOR_TARGETING: f32 = 5000.0;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
