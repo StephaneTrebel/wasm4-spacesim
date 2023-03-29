@@ -4,8 +4,8 @@ A game written in Rust for the [WASM-4](https://wasm4.org) fantasy console.
 
 See it in action [HERE](https://itch.io/embed-upload/7476472?color=333333) !
 
-[![First Screenshot](./assets/screenshot.png)](https://itch.io/embed-upload/7476472?color=333333)
-[![Second Screenshot](./assets/screenshot2.png)](https://itch.io/embed-upload/7476472?color=333333)
+[![First Screenshot](./assets/screenshot.png)](https://stephanetrebel.itch.io/spacerpg-wasm4)
+[![Second Screenshot](./assets/screenshot2.png)](https://stephanetrebel.itch.io/spacerpg-wasm4)
 
 ## The game
 
