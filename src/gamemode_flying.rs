@@ -8,7 +8,7 @@ use fastrand::Rng;
 use crate::{
     game::Buttons,
     graphics, hud,
-    maths::{distance, Coordinates},
+    maths::{distance, Coordinates3d},
     palette::set_draw_color,
     planet::Planet,
     player,
@@ -131,7 +131,7 @@ fn update_stars(mode: &mut GameModeFlying) {
     }
     for index in remove_indexes {
         mode.distant_stars.remove(index);
-        mode.distant_stars.push(Coordinates {
+        mode.distant_stars.push(Coordinates3d {
             x: {
                 if mode.movement.delta_x == DirectionX::Left
                     && mode.movement.delta_y == DirectionY::Center
@@ -172,7 +172,10 @@ fn draw(mode: &GameModeFlying, buttons: &Buttons) {
     }
 
     for (index, planet) in mode.planets.iter().enumerate() {
-        graphics::draw_planet(&planet, mode.targeting_planet == Some(index));
+        graphics::draw_planet(&planet);
+        if mode.targeting_planet == Some(index) {
+            graphics::draw_targeting(planet);
+        }
     }
 
     set_draw_color(0x0043);
@@ -255,8 +258,8 @@ fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32) {
 
 pub struct GameModeFlying {
     current_flying_mode: FlyingMode,
-    debris: Vec<Coordinates>,
-    distant_stars: Vec<Coordinates>,
+    debris: Vec<Coordinates3d>,
+    distant_stars: Vec<Coordinates3d>,
     movement: Movement,
     nearest_planet_distance: f32,
     planets: Vec<Planet>,
@@ -286,7 +289,7 @@ impl GameModeFlying {
         };
 
         for _ in 0..9 {
-            new_instance.distant_stars.push(Coordinates {
+            new_instance.distant_stars.push(Coordinates3d {
                 x: new_instance.rng.f32() * 159.0,
                 y: new_instance.rng.f32() * 159.0,
                 z: 0.0,
@@ -295,7 +298,7 @@ impl GameModeFlying {
         }
 
         for _ in 0..9 {
-            new_instance.debris.push(Coordinates {
+            new_instance.debris.push(Coordinates3d {
                 x: {
                     let x = 80.0 + new_instance.rng.f32() * 40.0 - 20.0;
                     if x == 80.0 {

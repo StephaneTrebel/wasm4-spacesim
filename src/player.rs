@@ -1,15 +1,15 @@
-use crate::{game::Buttons, maths::Coordinates, utils::clamp};
+use crate::{game::Buttons, maths::Coordinates3d, utils::clamp};
 
 #[derive(Default, Clone, Copy)]
 pub struct PlayerShip {
-    pub position: Coordinates,
+    pub position: Coordinates3d,
     pub speed: i32,
 }
 
 impl PlayerShip {
     pub fn new() -> Self {
         Self {
-            position: Coordinates {
+            position: Coordinates3d {
                 x: 0.0,
                 y: 0.0,
                 z: 0.0,

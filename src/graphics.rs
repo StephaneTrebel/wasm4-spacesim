@@ -2,7 +2,7 @@ use fastrand::Rng;
 use numtoa::NumToA;
 
 use crate::{
-    maths::{project, Coordinates},
+    maths::{project, Coordinates3d},
     palette::set_draw_color,
     planet::Planet,
     planet_sprite::{get_colors, get_flags, get_height, get_level, get_sprite, get_width, Level},
@@ -37,41 +37,86 @@ pub fn pixel(x: i32, y: i32, color: u8) {
     }
 }
 
-pub fn draw_star(coords: &Coordinates) {
+pub fn draw_star(coords: &Coordinates3d) {
     pixel(coords.x as i32, coords.y as i32, 1);
 }
 
-pub fn draw_debris(coords: &Coordinates, rng: &Rng) {
+pub fn draw_debris(coords: &Coordinates3d, rng: &Rng) {
     let delta_x = rng.i8(-1..1) as i32;
     let delta_y = rng.i8(-1..1) as i32;
     pixel(coords.x as i32 + delta_x, coords.y as i32 + delta_y, 1);
 }
 
-pub fn draw_planet(planet: &Planet, is_targeted: bool) {
+pub fn draw_planet(planet: &Planet) {
     if planet.coordinates.z >= 0.0 {
         let coordinates = project(planet.coordinates);
         let level = get_level(planet.distance);
 
         set_draw_color(get_colors());
+        let x = (coordinates.x + 80.0 - get_width(&level) as f32 / 2.0) as i32;
         let y = (coordinates.y + 80.0 - get_width(&level) as f32 / 2.0) as i32;
         blit(
             &get_sprite(&level),
-            (coordinates.x + 80.0 - get_width(&level) as f32 / 2.0) as i32,
+            x,
             y,
             get_width(&level),
             get_height(&level),
             get_flags(&level),
         );
+    }
+}
 
-        if is_targeted {
-            set_draw_color(0x0013);
-            let mut buf = [0u8; 32];
-            text(
-                (planet.distance.floor() as i32).numtoa_str(10, &mut buf),
-                (coordinates.x + 63.0) as i32,
-                y - 10,
-            );
-        }
+pub fn draw_targeting(planet: &Planet) {
+    let coordinates = project(planet.coordinates);
+    let level = get_level(planet.distance);
+    let x = (coordinates.x + 80.0 - get_width(&level) as f32 / 2.0) as i32;
+    let y = (coordinates.y + 80.0 - get_height(&level) as f32 / 2.0) as i32;
+    let center_x = x + get_width(&level) as i32 / 2;
+    let center_y = y + get_height(&level) as i32 / 2;
+
+    set_draw_color(0x0013);
+
+    // Draw proper targeting reticle around planet
+    if center_x > 0 && center_y > 0 {
+        let mut buf = [0u8; 32];
+        let distance = (planet.distance.floor() as i32).numtoa_str(10, &mut buf);
+        text(
+            distance,
+            center_x -
+             // distance string length is used to «center» the text above the planet
+             (distance.len() as i32) * 4,
+            y - 10,
+        );
+        set_draw_color(0x0002);
+        line(x, y, x + get_width(&level) as i32 / 3, y);
+        line(x, y, x, y + get_height(&level) as i32 / 3);
+        line(
+            x + get_width(&level) as i32,
+            y + get_height(&level) as i32,
+            x + get_width(&level) as i32 * 2 / 3,
+            y + get_height(&level) as i32,
+        );
+        line(
+            x + get_width(&level) as i32,
+            y + get_height(&level) as i32,
+            x + get_width(&level) as i32,
+            y + get_height(&level) as i32 * 2 / 3,
+        );
+    }
+
+    // Draw targeting indicator on screen edges
+    set_draw_color(0x0002);
+    if center_x < 0 && center_y > 0 {
+        text(b"\x84", 2, center_y);
+    }
+    if center_x > 0 && center_y < 0 {
+        text(b"\x86", center_x, 2);
+    }
+    if center_x > 160 && center_y > 0 {
+        text(b"\x85", 151, center_y);
+    }
+    if center_x > 0 && center_y > 160 {
+        text(b"\x87", center_x, 151);
     }
 }
 

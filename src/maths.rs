@@ -1,17 +1,23 @@
 #[derive(Default, Clone, Copy, PartialEq)]
-pub struct Coordinates {
+pub struct Coordinates3d {
     pub x: f32,
     pub y: f32,
     pub z: f32,
     pub w: f32,
 }
 
-pub fn transform(vertice: Coordinates, matrix: [f32; 16]) -> Coordinates {
+#[derive(Default, Clone, Copy, PartialEq)]
+pub struct Coordinates2d {
+    pub x: f32,
+    pub y: f32,
+}
+
+pub fn transform(vertice: Coordinates3d, matrix: [f32; 16]) -> Coordinates3d {
     let w = vertice.x * matrix[3]
         + vertice.y * matrix[7]
         + vertice.z * matrix[11]
         + vertice.w * matrix[15];
-    Coordinates {
+    Coordinates3d {
         x: (vertice.x * matrix[0]
             + vertice.y * matrix[4]
             + vertice.z * matrix[8]
@@ -31,7 +37,7 @@ pub fn transform(vertice: Coordinates, matrix: [f32; 16]) -> Coordinates {
     }
 }
 
-pub fn rotate_xz(vertice: Coordinates, theta: f32) -> Coordinates {
+pub fn rotate_xz(vertice: Coordinates3d, theta: f32) -> Coordinates3d {
     transform(
         vertice,
         [
@@ -55,7 +61,7 @@ pub fn rotate_xz(vertice: Coordinates, theta: f32) -> Coordinates {
     )
 }
 
-pub fn rotate_yz(vertice: Coordinates, theta: f32) -> Coordinates {
+pub fn rotate_yz(vertice: Coordinates3d, theta: f32) -> Coordinates3d {
     transform(
         vertice,
         [
@@ -79,7 +85,7 @@ pub fn rotate_yz(vertice: Coordinates, theta: f32) -> Coordinates {
     )
 }
 
-pub fn project(vertice: Coordinates) -> Coordinates {
+pub fn project(vertice: Coordinates3d) -> Coordinates3d {
     transform(
         vertice,
         [
@@ -105,7 +111,7 @@ pub fn project(vertice: Coordinates) -> Coordinates {
 
 // compute distance between a
 // player and anything
-pub fn distance(coords: Coordinates) -> f32 {
+pub fn distance(coords: Coordinates3d) -> f32 {
     (coords.x.powi(2) + coords.y.powi(2) + coords.z.powi(2))
         .sqrt()
         .floor()

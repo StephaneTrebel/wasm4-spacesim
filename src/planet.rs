@@ -3,19 +3,19 @@ use alloc::string::{ToString, String};
 
 use crate::{
     gamemode_flying::{DirectionX, DirectionY, Movement},
-    maths::{distance, rotate_xz, rotate_yz, Coordinates},
+    maths::{distance, rotate_xz, rotate_yz, Coordinates3d},
 };
 
 #[derive(Clone, PartialEq)]
 pub struct Planet {
-    pub coordinates: Coordinates,
+    pub coordinates: Coordinates3d,
     pub name: String,
     pub distance: f32,
 }
 
 impl Planet {
     pub fn new(x: f32, y: f32, z: f32, name: &str) -> Self {
-        let coords = Coordinates { x, y, z, w: 1.0 };
+        let coords = Coordinates3d { x, y, z, w: 1.0 };
         Self {
             coordinates: coords,
             name: name.to_string(),
