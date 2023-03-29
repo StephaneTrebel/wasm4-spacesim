@@ -52,7 +52,7 @@ pub fn draw_planet(planet: &Planet) {
         let coordinates = project(planet.coordinates);
         let level = get_level(planet.distance);
 
-        set_draw_color(get_colors());
+        set_draw_color(get_colors(&level));
         let x = (coordinates.x + 80.0 - get_width(&level) as f32 / 2.0) as i32;
         let y = (coordinates.y + 80.0 - get_width(&level) as f32 / 2.0) as i32;
         blit(
@@ -121,8 +121,8 @@ pub fn draw_targeting(planet: &Planet) {
 }
 
 pub fn draw_planet_landed(_planet: &Planet) {
-    let level = Level::ONE;
-    set_draw_color(get_colors());
+    let level = Level::LANDSCAPE;
+    set_draw_color(get_colors(&level));
     blit(
         &get_sprite(&level),
         0,

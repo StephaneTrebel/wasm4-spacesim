@@ -1,6 +1,6 @@
 use crate::{
     gamemode_flying::GameModeFlying,
-    gamemode_landed::GameModeLanded,
+    gamemode_landed::{self, GameModeLanded},
     wasm4::{BUTTON_1, BUTTON_2, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_UP, GAMEPAD1},
 };
 
@@ -145,18 +145,26 @@ impl Game {
                 }
             }
             GameMode::Landed(mode) => {
-                let (new_mode, should_flyout) = mode.update(
+                let (new_mode, state_transition) = mode.update(
                     &self.button_just_pressed,
                     &self.button_pressed_this_frame,
                     self.cooldown_tick,
                 );
                 self.current_mode = GameMode::Landed(new_mode);
                 // Handle game mode transition
-                if should_flyout {
-                    // TODO Replace ::new with a factory that will create a flying mode
-                    // from the current planet and with the current ship
-                    self.current_mode = GameMode::Flying(GameModeFlying::new());
-                    self.cooldown_tick = 10;
+                match state_transition {
+                    gamemode_landed::StateTransition::ChangeTo(next_state) => {
+                        self.cooldown_tick = 10;
+                        match next_state {
+                            gamemode_landed::Mode::ExitMode => {
+                                // TODO Replace ::new with a factory that will create a flying mode
+                                // from the current planet and with the current ship
+                                self.current_mode = GameMode::Flying(GameModeFlying::new());
+                            }
+                            _ => {}
+                        }
+                    }
+                    gamemode_landed::StateTransition::NoChange => {}
                 }
             }
             _ => {}

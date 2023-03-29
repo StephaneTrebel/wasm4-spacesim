@@ -1,5 +1,5 @@
 extern crate alloc;
-use alloc::string::{ToString, String};
+use alloc::string::{String, ToString};
 
 use crate::{
     gamemode_flying::{DirectionX, DirectionY, Movement},
