@@ -167,10 +167,6 @@ fn update_stars(mode: &mut GameModeFlying) {
 fn draw(mode: &GameModeFlying, buttons: &Buttons) {
     set_draw_color(0x0001);
 
-    for debris in &mode.debris {
-        graphics::draw_debris(debris, &mode.rng);
-    }
-
     for star in &mode.distant_stars {
         graphics::draw_star(star);
     }
@@ -203,6 +199,11 @@ fn draw(mode: &GameModeFlying, buttons: &Buttons) {
         if buttons.down {
             text("SPD- ".to_owned() + s, 1, 150);
         }
+    }
+
+    set_draw_color(0x0001);
+    for debris in &mode.debris {
+        graphics::draw_debris(debris, &mode.rng);
     }
 
     set_draw_color(0x0040);
