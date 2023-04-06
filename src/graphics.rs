@@ -8,6 +8,7 @@ use crate::{
         get_colors, get_flags, get_height, get_level, get_sprite, get_width, Level,
     },
     planets::Planet,
+    utils::clamp,
     wasm4::*,
 };
 
@@ -75,50 +76,53 @@ pub fn draw_targeting(planet: &Planet) {
     let y = (coordinates.y + 80.0 - get_height(&level) as f32 / 2.0) as i32;
     let center_x = x + get_width(&level) as i32 / 2;
     let center_y = y + get_height(&level) as i32 / 2;
-
-    set_draw_color(0x0013);
+    let edge_x = center_x + 80;
+    let edge_y = center_y + 80;
 
     // Draw proper targeting reticle around planet
-    if center_x > 0 && center_y > 0 && planet.coordinates.z > 0.0 {
-        let mut buf = [0u8; 32];
-        let distance = (planet.distance.floor() as i32).numtoa_str(10, &mut buf);
-        text(
-            distance,
-            center_x -
+    if planet.coordinates.z > 0.0 {
+        if edge_x > 0 && edge_y > 0 {
+            let mut buf = [0u8; 32];
+            let distance = (planet.distance.floor() as i32).numtoa_str(10, &mut buf);
+
+            set_draw_color(0x0013);
+            text(
+                distance,
+                center_x -
              // distance string length is used to «center» the text above the planet
              (distance.len() as i32) * 4,
-            y - 10,
-        );
-        set_draw_color(0x0002);
-        line(x, y, x + get_width(&level) as i32 / 3, y);
-        line(x, y, x, y + get_height(&level) as i32 / 3);
-        line(
-            x + get_width(&level) as i32,
-            y + get_height(&level) as i32,
-            x + get_width(&level) as i32 * 2 / 3,
-            y + get_height(&level) as i32,
-        );
-        line(
-            x + get_width(&level) as i32,
-            y + get_height(&level) as i32,
-            x + get_width(&level) as i32,
-            y + get_height(&level) as i32 * 2 / 3,
-        );
-    }
+                y - 10,
+            );
 
-    // Draw targeting indicator on screen edges
-    set_draw_color(0x0002);
-    if center_x < 0 && center_y > 0 {
-        text(b"\x84", 2, center_y);
-    }
-    if center_x > 0 && center_y < 0 {
-        text(b"\x86", center_x, 2);
-    }
-    if center_x > 160 && center_y > 0 {
-        text(b"\x85", 151, center_y);
-    }
-    if center_x > 0 && center_y > 160 {
-        text(b"\x87", center_x, 151);
+            set_draw_color(0x0002);
+            line(x, y, x + get_width(&level) as i32 / 3, y);
+            line(x, y, x, y + get_height(&level) as i32 / 3);
+            line(
+                x + get_width(&level) as i32,
+                y + get_height(&level) as i32,
+                x + get_width(&level) as i32 * 2 / 3,
+                y + get_height(&level) as i32,
+            );
+            line(
+                x + get_width(&level) as i32,
+                y + get_height(&level) as i32,
+                x + get_width(&level) as i32,
+                y + get_height(&level) as i32 * 2 / 3,
+            );
+        }
+
+        // Draw targeting indicator on screen edges
+        set_draw_color(0x0002);
+        match (center_x, center_y) {
+            (x, _) if x < 0 => text(b"\x84", 2, clamp(0, center_y, 150)),
+            (_, y) if y < 0 => text(b"\x86", clamp(0, center_x, 150), 2),
+            (x, _) if x > 160 => text(b"\x85", 151, clamp(0, center_y, 150)),
+            (_, y) if y > 160 => text(b"\x87", clamp(0, center_x, 150), 151),
+            (_, _) => {}
+        };
+    } else {
+        set_draw_color(0x0002);
+        text("TARGET BEHIND", 30, 2);
     }
 }
 
