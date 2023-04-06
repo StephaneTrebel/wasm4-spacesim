@@ -9,6 +9,7 @@ use crate::{
 pub mod planet_hud;
 
 pub mod planet_a;
+pub mod planet_b;
 
 #[derive(Clone, PartialEq)]
 pub struct Planet {
