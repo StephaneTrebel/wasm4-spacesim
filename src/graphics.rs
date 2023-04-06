@@ -77,7 +77,7 @@ pub fn draw_targeting(planet: &Planet) {
     set_draw_color(0x0013);
 
     // Draw proper targeting reticle around planet
-    if center_x > 0 && center_y > 0 {
+    if center_x > 0 && center_y > 0 && planet.coordinates.z > 0.0 {
         let mut buf = [0u8; 32];
         let distance = (planet.distance.floor() as i32).numtoa_str(10, &mut buf);
         text(
