@@ -10,7 +10,7 @@ use crate::{
     graphics, hud,
     maths::{distance, Coordinates3d},
     palette::set_draw_color,
-    planet::Planet,
+    planets::Planet,
     player,
     wasm4::*,
 };

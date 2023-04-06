@@ -4,8 +4,10 @@ use numtoa::NumToA;
 use crate::{
     maths::{project, Coordinates3d},
     palette::set_draw_color,
-    planet::Planet,
-    planet_sprite::{get_colors, get_flags, get_height, get_level, get_sprite, get_width, Level},
+    planets::planet_a::{
+        get_colors, get_flags, get_height, get_level, get_sprite, get_width, Level,
+    },
+    planets::Planet,
     wasm4::*,
 };
 

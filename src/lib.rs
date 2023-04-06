@@ -10,10 +10,8 @@ mod graphics;
 mod hud;
 mod maths;
 mod palette;
+mod planets;
 mod player;
-mod planet;
-mod planet_hud;
-mod planet_sprite;
 mod utils;
 mod wasm4;
 

@@ -6,6 +6,10 @@ use crate::{
     maths::{distance, rotate_xz, rotate_yz, Coordinates3d},
 };
 
+pub mod planet_hud;
+
+pub mod planet_a;
+
 #[derive(Clone, PartialEq)]
 pub struct Planet {
     pub coordinates: Coordinates3d,

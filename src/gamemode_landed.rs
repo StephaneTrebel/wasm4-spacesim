@@ -1,6 +1,6 @@
-use crate::{
-    game::Buttons, graphics, palette::set_draw_color, planet::Planet, planet_hud, wasm4::*,
-};
+use crate::planets::{planet_hud, Planet};
+use crate::wasm4::{blit, text};
+use crate::{game::Buttons, graphics, palette::set_draw_color};
 
 #[derive(PartialEq, Eq, Clone)]
 #[repr(i8)]
