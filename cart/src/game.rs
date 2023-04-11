@@ -1,19 +1,11 @@
-use crate::{
-    gamemode_flying::GameModeFlying,
-    gamemode_landed::{self, GameModeLanded},
-    wasm4::{BUTTON_1, BUTTON_2, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_UP, GAMEPAD1},
+use buttons::Buttons;
+use gamemode_flying::GameModeFlying;
+use gamemode_landed::{self, GameModeLanded};
+use wasm4::wasm4::{
+    BUTTON_1, BUTTON_2, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_UP, GAMEPAD1,
 };
 
 static mut PREVIOUS_GAMEPAD: u8 = 0;
-
-pub struct Buttons {
-    pub up: bool,
-    pub down: bool,
-    pub left: bool,
-    pub right: bool,
-    pub two: bool,
-    pub one: bool,
-}
 
 pub enum GameMode {
     None, // Limbo zone while everything is loading

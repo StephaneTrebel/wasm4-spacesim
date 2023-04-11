@@ -1,0 +1,25 @@
+[package]
+name = "gamemode_landed"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+buddy-alloc = { version = "0.4.1", optional = true }
+fastrand = "1.6.0"
+lazy_static = "1.4.0"
+numtoa = "0.2.4"
+spin = "0.9.5"
+buttons = { path = "../buttons" }
+graphics = { path = "../graphics" }
+maths = { path = "../maths" }
+planets = { path = "../planets" }
+wasm4 = { path = "../wasm4" }
+
+[profile.release]
+debug = true
+opt-level = "z"
+lto = true
+
+[features]
+# use `--no-default-features` or comment out next line to disable allocator
+default = ["buddy-alloc"]

@@ -5,17 +5,15 @@ use alloc::{borrow::ToOwned, vec::Vec};
 
 use fastrand::Rng;
 
-use crate::{
-    game::Buttons,
-    graphics, hud,
-    maths::{distance, Coordinates3d},
-    palette::set_draw_color,
-    planets::Planet,
-    player,
-    wasm4::*,
-};
+use buttons::Buttons;
+
+use maths::{distance, Coordinates3d};
+use planets::{self, Planet};
+use wasm4::{palette::set_draw_color, wasm4::*};
 
 use numtoa::NumToA;
+
+mod hud;
 
 const MAXIMUM_DISTANCE_FOR_LANDING: f32 = 100.0;
 const MAXIMUM_DISTANCE_FOR_TARGETING: f32 = 5000.0;
@@ -229,8 +227,29 @@ fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32) {
     let mut nearest_distance: f32 = MAX;
     let mut tmp_planet_landing_possible: Option<&Planet> = None;
     let mut tmp_targeting_planet_index: usize = 0;
+
+    let theta_xz = {
+        if mode.movement.delta_x == DirectionX::Left {
+            -mode.theta
+        } else if mode.movement.delta_x == DirectionX::Right {
+            mode.theta
+        } else {
+            0.0
+        }
+    };
+
+    let theta_yz = {
+        if mode.movement.delta_y == DirectionY::Up {
+            mode.theta
+        } else if mode.movement.delta_y == DirectionY::Down {
+            -mode.theta
+        } else {
+            0.0
+        }
+    };
+
     for (index, planet) in mode.planets.iter_mut().enumerate() {
-        planet.update(&mode.movement, mode.theta, mode.player_ship.speed);
+        planet.update(theta_xz, theta_yz, mode.player_ship.speed);
         tmp_distance = distance(planet.coordinates);
         if tmp_distance < nearest_distance {
             tmp_planet_landing_possible = Some(planet);
@@ -320,9 +339,21 @@ impl GameModeFlying {
             });
         }
 
-        new_instance
-            .planets
-            .push(Planet::new(-300.0, -300.0, 1000.0, "Test"));
+        new_instance.planets.push(Planet::new(
+            -300.0,
+            -300.0,
+            1000.0,
+            "FarmLands",
+            planets::Type::B,
+        ));
+
+        new_instance.planets.push(Planet::new(
+            -200.0,
+            -200.0,
+            5000.0,
+            "FarmLands",
+            planets::Type::A,
+        ));
         new_instance
     }
 

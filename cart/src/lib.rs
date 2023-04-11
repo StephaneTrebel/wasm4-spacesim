@@ -1,22 +1,10 @@
 #![no_std]
 
-#[cfg(feature = "buddy-alloc")]
-mod alloc;
-
 mod game;
-mod gamemode_flying;
-mod gamemode_landed;
-mod graphics;
-mod hud;
-mod maths;
-mod palette;
-mod planets;
-mod player;
-mod utils;
-mod wasm4;
 
 use lazy_static::lazy_static;
 use spin::Mutex;
+use wasm4::palette;
 
 lazy_static! {
     static ref GAME: Mutex<game::Game> = Mutex::new(game::Game::new());

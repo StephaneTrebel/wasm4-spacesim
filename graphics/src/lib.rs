@@ -1,16 +1,10 @@
 use fastrand::Rng;
-use numtoa::NumToA;
 
-use crate::{
-    maths::{project, Coordinates3d},
-    palette::set_draw_color,
-    planets::planet_a::{
-        get_colors, get_flags, get_height, get_level, get_sprite, get_width, Level,
-    },
-    planets::Planet,
-    utils::clamp,
-    wasm4::*,
-};
+use maths::{project, Coordinates3d};
+use numtoa::NumToA;
+use planets::{Planet, Level};
+use utils::clamp;
+use wasm4::{palette::set_draw_color, wasm4::*};
 
 pub fn pixel(x: i32, y: i32, color: u8) {
     if x < 0 || x > 159 {
@@ -53,29 +47,29 @@ pub fn draw_debris(coords: &Coordinates3d, rng: &Rng) {
 pub fn draw_planet(planet: &Planet) {
     if planet.coordinates.z >= 0.0 {
         let coordinates = project(planet.coordinates);
-        let level = get_level(planet.distance);
+        let level = planet.planet_type.get_level(planet.distance);
 
-        set_draw_color(get_colors(&level));
-        let x = (coordinates.x + 80.0 - get_width(&level) as f32 / 2.0) as i32;
-        let y = (coordinates.y + 80.0 - get_width(&level) as f32 / 2.0) as i32;
+        set_draw_color(planet.planet_type.get_colors(&level));
+        let x = (coordinates.x + 80.0 - planet.planet_type.get_width(&level) as f32 / 2.0) as i32;
+        let y = (coordinates.y + 80.0 - planet.planet_type.get_width(&level) as f32 / 2.0) as i32;
         blit(
-            &get_sprite(&level),
+            &planet.planet_type.get_sprite(&level),
             x,
             y,
-            get_width(&level),
-            get_height(&level),
-            get_flags(&level),
+            planet.planet_type.get_width(&level),
+            planet.planet_type.get_height(&level),
+            planet.planet_type.get_flags(&level),
         );
     }
 }
 
 pub fn draw_targeting(planet: &Planet) {
     let coordinates = project(planet.coordinates);
-    let level = get_level(planet.distance);
-    let x = (coordinates.x + 80.0 - get_width(&level) as f32 / 2.0) as i32;
-    let y = (coordinates.y + 80.0 - get_height(&level) as f32 / 2.0) as i32;
-    let center_x = x + get_width(&level) as i32 / 2;
-    let center_y = y + get_height(&level) as i32 / 2;
+    let level = planet.planet_type.get_level(planet.distance);
+    let x = (coordinates.x + 80.0 - planet.planet_type.get_width(&level) as f32 / 2.0) as i32;
+    let y = (coordinates.y + 80.0 - planet.planet_type.get_height(&level) as f32 / 2.0) as i32;
+    let center_x = x + planet.planet_type.get_width(&level) as i32 / 2;
+    let center_y = y + planet.planet_type.get_height(&level) as i32 / 2;
     let edge_x = center_x + 80;
     let edge_y = center_y + 80;
 
@@ -95,19 +89,24 @@ pub fn draw_targeting(planet: &Planet) {
             );
 
             set_draw_color(0x0002);
-            line(x, y, x + get_width(&level) as i32 / 3, y);
-            line(x, y, x, y + get_height(&level) as i32 / 3);
+            line(x, y, x + planet.planet_type.get_width(&level) as i32 / 3, y);
             line(
-                x + get_width(&level) as i32,
-                y + get_height(&level) as i32,
-                x + get_width(&level) as i32 * 2 / 3,
-                y + get_height(&level) as i32,
+                x,
+                y,
+                x,
+                y + planet.planet_type.get_height(&level) as i32 / 3,
             );
             line(
-                x + get_width(&level) as i32,
-                y + get_height(&level) as i32,
-                x + get_width(&level) as i32,
-                y + get_height(&level) as i32 * 2 / 3,
+                x + planet.planet_type.get_width(&level) as i32,
+                y + planet.planet_type.get_height(&level) as i32,
+                x + planet.planet_type.get_width(&level) as i32 * 2 / 3,
+                y + planet.planet_type.get_height(&level) as i32,
+            );
+            line(
+                x + planet.planet_type.get_width(&level) as i32,
+                y + planet.planet_type.get_height(&level) as i32,
+                x + planet.planet_type.get_width(&level) as i32,
+                y + planet.planet_type.get_height(&level) as i32 * 2 / 3,
             );
         }
 
@@ -126,15 +125,15 @@ pub fn draw_targeting(planet: &Planet) {
     }
 }
 
-pub fn draw_planet_landed(_planet: &Planet) {
+pub fn draw_planet_landed(planet: &Planet) {
     let level = Level::LANDSCAPE;
-    set_draw_color(get_colors(&level));
+    set_draw_color(planet.planet_type.get_colors(&level));
     blit(
-        &get_sprite(&level),
+        &planet.planet_type.get_sprite(&level),
         0,
         0,
-        get_width(&level),
-        get_height(&level),
-        get_flags(&level),
+        planet.planet_type.get_width(&level),
+        planet.planet_type.get_height(&level),
+        planet.planet_type.get_flags(&level),
     );
 }
