@@ -260,8 +260,9 @@ fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32) {
 
     // TODO
     if nearest_distance < MAXIMUM_DISTANCE_FOR_LANDING && cooldown_tick == 0 {
-        mode.current_flying_mode =
-            FlyingMode::LandingPossible(tmp_planet_landing_possible.unwrap().clone());
+        if let Some(planet) = tmp_planet_landing_possible {
+            mode.current_flying_mode = FlyingMode::LandingPossible(planet.clone());
+        }
     }
     if nearest_distance > MAXIMUM_DISTANCE_FOR_LANDING {
         mode.current_flying_mode = FlyingMode::Flying;
