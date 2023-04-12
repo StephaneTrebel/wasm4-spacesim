@@ -19,7 +19,7 @@ use numtoa::NumToA;
 
 mod hud;
 
-const MAXIMUM_DISTANCE_FOR_LANDING: f32 = 100.0;
+const MAXIMUM_DISTANCE_FOR_LANDING: f32 = 1000.0;
 const MAXIMUM_DISTANCE_FOR_TARGETING: f32 = 5000.0;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -348,7 +348,7 @@ impl GameModeFlying {
             -300.0,
             -300.0,
             1000.0,
-            "FarmLands",
+            "Metallia",
             planets::Type::B,
         ));
 
@@ -356,7 +356,7 @@ impl GameModeFlying {
             -200.0,
             -200.0,
             5000.0,
-            "FarmLands",
+            "Farm'leh",
             planets::Type::A,
         ));
         new_instance

@@ -3,7 +3,7 @@ use fastrand::Rng;
 use crate::{
     maths::{project, Coordinates3d},
     palette::set_draw_color,
-    planets::{Level, Planet},
+    planets::Planet,
     utils::clamp,
     wasm4::*,
 };
@@ -127,17 +127,4 @@ pub fn draw_targeting(planet: &Planet) {
         set_draw_color(0x0002);
         text("TARGET BEHIND", 30, 2);
     }
-}
-
-pub fn draw_planet_landed(planet: &Planet) {
-    let level = Level::LANDSCAPE;
-    set_draw_color(planet.planet_type.get_colors(&level));
-    blit(
-        &planet.planet_type.get_sprite(&level),
-        0,
-        0,
-        planet.planet_type.get_width(&level),
-        planet.planet_type.get_height(&level),
-        planet.planet_type.get_flags(&level),
-    );
 }

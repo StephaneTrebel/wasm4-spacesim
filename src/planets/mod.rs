@@ -15,7 +15,6 @@ pub enum Level {
     TWO,
     THREE,
     FOUR,
-    LANDSCAPE,
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -27,8 +26,7 @@ pub enum Type {
 impl Type {
     pub fn get_level(&self, distance: f32) -> Level {
         match distance.floor() as u32 {
-            0..=500 => Level::ONE,
-            501..=1000 => Level::ONE,
+            0..=1000 => Level::ONE,
             1001..=2000 => Level::TWO,
             2001..=3000 => Level::THREE,
             _ => Level::FOUR,
@@ -42,14 +40,12 @@ impl Type {
                 Level::TWO => Box::new(planet_a::planet_sprite_80::PLANET_80),
                 Level::THREE => Box::new(planet_a::planet_sprite_40::PLANET_40),
                 Level::FOUR => Box::new(planet_a::planet_sprite_12::PLANET_12),
-                Level::LANDSCAPE => Box::new(planet_a::planet_landscape::PLANET_LANDSCAPE),
             },
             Type::B => match level {
                 Level::ONE => Box::new(planet_b::planet_sprite_120::PLANET_120),
                 Level::TWO => Box::new(planet_b::planet_sprite_80::PLANET_80),
                 Level::THREE => Box::new(planet_b::planet_sprite_40::PLANET_40),
                 Level::FOUR => Box::new(planet_b::planet_sprite_12::PLANET_12),
-                Level::LANDSCAPE => Box::new(planet_b::planet_landscape::PLANET_LANDSCAPE),
             },
         }
     }
@@ -61,14 +57,12 @@ impl Type {
                 Level::TWO => planet_a::planet_sprite_80::PLANET_80_WIDTH,
                 Level::THREE => planet_a::planet_sprite_40::PLANET_40_WIDTH,
                 Level::FOUR => planet_a::planet_sprite_12::PLANET_12_WIDTH,
-                Level::LANDSCAPE => planet_a::planet_landscape::PLANET_LANDSCAPE_WIDTH,
             },
             Type::B => match level {
                 Level::ONE => planet_b::planet_sprite_120::PLANET_120_WIDTH,
                 Level::TWO => planet_b::planet_sprite_80::PLANET_80_WIDTH,
                 Level::THREE => planet_b::planet_sprite_40::PLANET_40_WIDTH,
                 Level::FOUR => planet_b::planet_sprite_12::PLANET_12_WIDTH,
-                Level::LANDSCAPE => planet_b::planet_landscape::PLANET_LANDSCAPE_WIDTH,
             },
         }
     }
@@ -80,14 +74,12 @@ impl Type {
                 Level::TWO => planet_a::planet_sprite_80::PLANET_80_HEIGHT,
                 Level::THREE => planet_a::planet_sprite_40::PLANET_40_HEIGHT,
                 Level::FOUR => planet_a::planet_sprite_12::PLANET_12_HEIGHT,
-                Level::LANDSCAPE => planet_a::planet_landscape::PLANET_LANDSCAPE_HEIGHT,
             },
             Type::B => match level {
                 Level::ONE => planet_b::planet_sprite_120::PLANET_120_HEIGHT,
                 Level::TWO => planet_b::planet_sprite_80::PLANET_80_HEIGHT,
                 Level::THREE => planet_b::planet_sprite_40::PLANET_40_HEIGHT,
                 Level::FOUR => planet_b::planet_sprite_12::PLANET_12_HEIGHT,
-                Level::LANDSCAPE => planet_b::planet_landscape::PLANET_LANDSCAPE_HEIGHT,
             },
         }
     }
@@ -99,14 +91,12 @@ impl Type {
                 Level::TWO => planet_a::planet_sprite_80::PLANET_80_FLAGS,
                 Level::THREE => planet_a::planet_sprite_40::PLANET_40_FLAGS,
                 Level::FOUR => planet_a::planet_sprite_12::PLANET_12_FLAGS,
-                Level::LANDSCAPE => planet_a::planet_landscape::PLANET_LANDSCAPE_FLAGS,
             },
             Type::B => match level {
                 Level::ONE => planet_b::planet_sprite_120::PLANET_120_FLAGS,
                 Level::TWO => planet_b::planet_sprite_80::PLANET_80_FLAGS,
                 Level::THREE => planet_b::planet_sprite_40::PLANET_40_FLAGS,
                 Level::FOUR => planet_b::planet_sprite_12::PLANET_12_FLAGS,
-                Level::LANDSCAPE => planet_b::planet_landscape::PLANET_LANDSCAPE_FLAGS,
             },
         }
     }
@@ -114,11 +104,9 @@ impl Type {
     pub fn get_colors(&self, level: &Level) -> u16 {
         match self {
             Type::A => match level {
-                Level::LANDSCAPE => 0x0432,
                 _ => 0x0234,
             },
             Type::B => match level {
-                Level::LANDSCAPE => 0x0432,
                 _ => 0x0234,
             },
         }

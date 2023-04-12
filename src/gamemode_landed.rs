@@ -1,6 +1,5 @@
 use crate::{
     buttons::Buttons,
-    graphics::draw_planet_landed,
     palette::set_draw_color,
     planets::{planet_hud, Planet},
     wasm4::{blit, text},
@@ -10,7 +9,6 @@ use crate::{
 #[repr(i8)]
 pub enum Mode {
     Menu,
-    ShowPlanet,
     ExitMode,
 }
 
@@ -19,7 +17,6 @@ pub enum Mode {
 pub enum MenuOption {
     FlyOut,
     Buy,
-    SeePlanet,
 }
 
 #[derive(PartialEq, Eq, Clone)]
@@ -50,28 +47,14 @@ fn update_movement(
             }
             gamemode.selected_planet_menu_option = match tmp_select {
                 0 => MenuOption::FlyOut,
-                1 => MenuOption::Buy,
-                _ => MenuOption::SeePlanet,
+                _ => MenuOption::Buy,
             };
 
             if just_pressed.one && cooldown_tick == 0 {
                 match gamemode.selected_planet_menu_option {
                     MenuOption::FlyOut => return StateTransition::ChangeTo(Mode::ExitMode),
-                    MenuOption::SeePlanet => return StateTransition::ChangeTo(Mode::ShowPlanet),
                     _ => return StateTransition::NoChange,
                 }
-            }
-        }
-        Mode::ShowPlanet => {
-            if (just_pressed.up
-                || just_pressed.down
-                || just_pressed.left
-                || just_pressed.right
-                || just_pressed.one
-                || just_pressed.two)
-                && cooldown_tick == 0
-            {
-                return StateTransition::ChangeTo(Mode::Menu);
             }
         }
         _ => {}
@@ -80,33 +63,26 @@ fn update_movement(
 }
 
 fn draw(gamemode: &GameModeLanded) {
-    draw_planet_landed(&gamemode.planet);
+    set_draw_color(0x0143);
+    blit(
+        &planet_hud::PLANET_HUD,
+        20,
+        20,
+        planet_hud::PLANET_HUD_WIDTH,
+        planet_hud::PLANET_HUD_HEIGHT,
+        planet_hud::PLANET_HUD_FLAGS,
+    );
 
-    if gamemode.submode != Mode::ShowPlanet {
-        set_draw_color(0x0143);
-        blit(
-            &planet_hud::PLANET_HUD,
-            20,
-            20,
-            planet_hud::PLANET_HUD_WIDTH,
-            planet_hud::PLANET_HUD_HEIGHT,
-            planet_hud::PLANET_HUD_FLAGS,
-        );
-
-        set_draw_color(0x0012);
-        text("Fly out", 37, 27);
-        text("Buy", 37, 47);
-        text("See Planet", 37, 67);
-        match gamemode.selected_planet_menu_option {
-            MenuOption::FlyOut => {
-                text(b"\x85", 27, 27);
-            }
-            MenuOption::Buy => {
-                text(b"\x85", 27, 47);
-            }
-            MenuOption::SeePlanet => {
-                text(b"\x85", 27, 67);
-            }
+    set_draw_color(0x0012);
+    text(&gamemode.planet.name, 27, 5);
+    text("Fly out", 37, 27);
+    text("Buy", 37, 47);
+    match gamemode.selected_planet_menu_option {
+        MenuOption::FlyOut => {
+            text(b"\x85", 27, 27);
+        }
+        MenuOption::Buy => {
+            text(b"\x85", 27, 47);
         }
     }
 }
@@ -148,9 +124,6 @@ impl GameModeLanded {
             cooldown_tick,
         );
         match state_transition {
-            StateTransition::ChangeTo(Mode::ShowPlanet) => {
-                new_instance.submode = Mode::ShowPlanet;
-            }
             StateTransition::ChangeTo(Mode::Menu) => {
                 new_instance.submode = Mode::Menu;
             }
