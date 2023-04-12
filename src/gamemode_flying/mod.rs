@@ -219,7 +219,7 @@ fn draw(mode: &GameModeFlying, buttons: &Buttons) {
         set_draw_color(0x0012);
         text(
             "LAND ON ".to_owned() + &name + " ?",
-            30 - name.len() as i32,
+            20 - name.len() as i32,
             80,
         );
         text(b"Press \x80 to do so", 17, 90);
