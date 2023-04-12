@@ -3,7 +3,7 @@ use fastrand::Rng;
 use crate::{
     maths::{project, Coordinates3d},
     palette::set_draw_color,
-    planets::Planet,
+    planets::{Level, Planet},
     utils::clamp,
     wasm4::*,
 };
@@ -52,18 +52,22 @@ pub fn draw_planet(planet: &Planet) {
     if planet.coordinates.z >= 0.0 {
         let coordinates = project(planet.coordinates);
         let level = planet.planet_type.get_level(planet.distance);
-
-        set_draw_color(planet.planet_type.get_colors(&level));
         let x = (coordinates.x + 80.0 - planet.planet_type.get_width(&level) as f32 / 2.0) as i32;
         let y = (coordinates.y + 80.0 - planet.planet_type.get_width(&level) as f32 / 2.0) as i32;
-        blit(
-            &planet.planet_type.get_sprite(&level),
-            x,
-            y,
-            planet.planet_type.get_width(&level),
-            planet.planet_type.get_height(&level),
-            planet.planet_type.get_flags(&level),
-        );
+
+        if level != Level::FOUR {
+            set_draw_color(planet.planet_type.get_colors(&level));
+            blit(
+                &planet.planet_type.get_sprite(&level),
+                x,
+                y,
+                planet.planet_type.get_width(&level),
+                planet.planet_type.get_height(&level),
+                planet.planet_type.get_flags(&level),
+            );
+        } else {
+            pixel(x,y, 2);
+        }
     }
 }
 
