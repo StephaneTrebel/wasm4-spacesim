@@ -19,8 +19,8 @@ use numtoa::NumToA;
 
 mod hud;
 
-const MAXIMUM_DISTANCE_FOR_LANDING: f32 = 500.0;
-const MAXIMUM_DISTANCE_FOR_TARGETING: f32 = 3000.0;
+const MAXIMUM_DISTANCE_FOR_LANDING: f32 = 300.0;
+const MAXIMUM_DISTANCE_FOR_TARGETING: f32 = 2001.0;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(i8)]
