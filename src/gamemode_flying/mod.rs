@@ -8,7 +8,7 @@ use fastrand::Rng;
 use crate::{
     buttons::Buttons,
     graphics::{draw_debris, draw_planet, draw_star, draw_targeting},
-    maths::{distance, Coordinates3d},
+    maths::{distance, project, Coordinates3d},
     palette::set_draw_color,
     planets::{self, Planet},
     player::PlayerShip,
@@ -20,7 +20,6 @@ use numtoa::NumToA;
 mod hud;
 
 const MAXIMUM_DISTANCE_FOR_LANDING: f32 = 300.0;
-const MAXIMUM_DISTANCE_FOR_TARGETING: f32 = 2001.0;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(i8)]
@@ -48,8 +47,6 @@ pub enum FlyingMode {
     Flying,
     LandingPossible(Planet),
 }
-
-pub type PlanetTargeting = Option<usize>;
 
 fn update_movement(mode: &mut GameModeFlying, buttons: &Buttons) -> Option<Planet> {
     mode.movement.delta_x = DirectionX::Center;
@@ -166,6 +163,37 @@ fn update_stars(mode: &mut GameModeFlying) {
     }
 }
 
+fn update_player_ship(mode: &mut GameModeFlying, buttons: &Buttons) {
+    if buttons.two && buttons.up {
+        mode.player_ship.increment_speed();
+    }
+    if buttons.two && buttons.down {
+        mode.player_ship.decrement_speed();
+    }
+
+    if buttons.one {
+        let mut targeting_something = false;
+        for (index, planet) in mode.planets.iter().enumerate() {
+            let coordinates = project(planet.coordinates);
+
+            match (
+                coordinates.x.floor() as i32,
+                coordinates.y.floor() as i32,
+                coordinates.z.floor() as i32,
+            ) {
+                (-30..=30, -30..=30, 0..=100) => {
+                    targeting_something = true;
+                    mode.targeted_planet_index = Some(index as u8)
+                }
+                (_, _, _) => {}
+            }
+        }
+        if !targeting_something {
+            mode.targeted_planet_index = None;
+        }
+    }
+}
+
 fn draw(mode: &GameModeFlying, buttons: &Buttons) {
     set_draw_color(0x0001);
 
@@ -175,7 +203,8 @@ fn draw(mode: &GameModeFlying, buttons: &Buttons) {
 
     for (index, planet) in mode.planets.iter().enumerate() {
         draw_planet(&planet);
-        if mode.targeting_planet == Some(index) {
+
+        if mode.targeted_planet_index == Some(index as u8) {
             draw_targeting(planet);
         }
     }
@@ -230,7 +259,6 @@ fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32) {
     let mut tmp_distance: f32;
     let mut nearest_distance: f32 = MAX;
     let mut tmp_planet_landing_possible: Option<&Planet> = None;
-    let mut tmp_targeting_planet_index: usize = 0;
 
     let theta_xz = {
         if mode.movement.delta_x == DirectionX::Left {
@@ -252,17 +280,15 @@ fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32) {
         }
     };
 
-    for (index, planet) in mode.planets.iter_mut().enumerate() {
+    for planet in mode.planets.iter_mut() {
         planet.update(theta_xz, theta_yz, mode.player_ship.speed);
         tmp_distance = distance(planet.coordinates);
         if tmp_distance < nearest_distance {
             tmp_planet_landing_possible = Some(planet);
-            tmp_targeting_planet_index = index;
             nearest_distance = tmp_distance;
         }
     }
 
-    // TODO
     if nearest_distance < MAXIMUM_DISTANCE_FOR_LANDING && cooldown_tick == 0 {
         if let Some(planet) = tmp_planet_landing_possible {
             mode.current_flying_mode = FlyingMode::LandingPossible(planet.clone());
@@ -271,13 +297,6 @@ fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32) {
     if nearest_distance > MAXIMUM_DISTANCE_FOR_LANDING {
         mode.current_flying_mode = FlyingMode::Flying;
     }
-
-    if mode.nearest_planet_distance < MAXIMUM_DISTANCE_FOR_TARGETING {
-        mode.targeting_planet = Some(tmp_targeting_planet_index);
-    } else {
-        mode.targeting_planet = None;
-    }
-    mode.nearest_planet_distance = nearest_distance;
 }
 
 pub struct GameModeFlying {
@@ -285,11 +304,10 @@ pub struct GameModeFlying {
     debris: Vec<Coordinates3d>,
     distant_stars: Vec<Coordinates3d>,
     movement: Movement,
-    nearest_planet_distance: f32,
+    targeted_planet_index: Option<u8>,
     planets: Vec<Planet>,
     player_ship: PlayerShip,
     rng: Rng,
-    targeting_planet: PlanetTargeting,
     theta: f32,
 }
 
@@ -304,11 +322,10 @@ impl GameModeFlying {
                 delta_x: DirectionX::Center,
                 delta_y: DirectionY::Center,
             },
-            nearest_planet_distance: 0.0,
+            targeted_planet_index: None,
             planets: Vec::new(),
             player_ship: PlayerShip::new(),
             rng,
-            targeting_planet: None,
             theta: 0.01,
         };
 
@@ -371,27 +388,25 @@ impl GameModeFlying {
                 delta_x: self.movement.delta_x,
                 delta_y: self.movement.delta_y,
             },
-            nearest_planet_distance: self.nearest_planet_distance,
+            targeted_planet_index: self.targeted_planet_index,
             planets: self.planets.clone(),
             player_ship: self.player_ship.clone(),
             rng: self.rng.clone(),
-            targeting_planet: self.targeting_planet,
             theta: self.theta,
         }
     }
 
     pub fn update(&self, buttons: &Buttons, cooldown_tick: i32) -> (Self, Option<Planet>) {
         let mut new_instance = self.copy();
+
         let should_land = update_movement(&mut new_instance, buttons);
+
         update_debris(&mut new_instance);
         update_stars(&mut new_instance);
-        if buttons.two && buttons.up {
-            new_instance.player_ship.increment_speed();
-        }
-        if buttons.two && buttons.down {
-            new_instance.player_ship.decrement_speed();
-        }
+        update_player_ship(&mut new_instance, buttons);
+
         update_planets(&mut new_instance, cooldown_tick);
+
         draw(&new_instance, buttons);
         (new_instance, should_land)
     }

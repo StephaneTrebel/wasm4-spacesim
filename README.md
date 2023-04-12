@@ -13,7 +13,9 @@ You fly a spaceship in the vast and empty universe
 
 Commands:
 - ↑, ↓, ←, → : Yaw and Pitch the spaceship
-- \<PRIMARY BUTTON\> (mostly \<SPACE\>) confirm some actions (you'll be notified when it can be used)
+- \<PRIMARY BUTTON\> (mostly \<SPACE\>) initiate some actions:
+  - Land on a planet whenever possible (there will be a hint for that)
+	- Target a planet that you have placed in the center scope. Targeting nothing will result in disabling targeting.
 - \<SECONDARY BUTTON\> (for me it's `À` but it may be `W` or `Z`) combined with either ↑ or ↓ accelerates/decelerates
 
 ## Building
