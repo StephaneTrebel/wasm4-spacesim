@@ -1,4 +1,4 @@
-use crate::{buttons::Buttons, maths::Coordinates3d, utils::clamp};
+use crate::{maths::Coordinates3d, utils::clamp};
 
 #[derive(Default, Clone, Copy)]
 pub struct PlayerShip {
@@ -21,12 +21,10 @@ impl PlayerShip {
         }
     }
 
-    pub fn update_speed(&mut self, buttons: &Buttons) {
-        if buttons.two && buttons.up {
-            self.speed = clamp(0, self.speed + 1, MAX_SPEED);
-        }
-        if buttons.two && buttons.down {
-            self.speed = clamp(0, self.speed - 1, MAX_SPEED);
-        }
+    pub fn increment_speed(&mut self) {
+        self.speed = clamp(0, self.speed + 1, MAX_SPEED);
+    }
+    pub fn decrement_speed(&mut self) {
+        self.speed = clamp(0, self.speed - 1, MAX_SPEED);
     }
 }

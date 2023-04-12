@@ -385,7 +385,12 @@ impl GameModeFlying {
         let should_land = update_movement(&mut new_instance, buttons);
         update_debris(&mut new_instance);
         update_stars(&mut new_instance);
-        new_instance.player_ship.update_speed(buttons);
+        if buttons.two && buttons.up {
+            new_instance.player_ship.increment_speed();
+        }
+        if buttons.two && buttons.down {
+            new_instance.player_ship.decrement_speed();
+        }
         update_planets(&mut new_instance, cooldown_tick);
         draw(&new_instance, buttons);
         (new_instance, should_land)
