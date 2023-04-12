@@ -1,8 +1,8 @@
-use buttons::Buttons;
-use gamemode_flying::GameModeFlying;
-use gamemode_landed::{self, GameModeLanded};
-use wasm4::wasm4::{
-    BUTTON_1, BUTTON_2, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_UP, GAMEPAD1,
+use crate::{
+    buttons::Buttons,
+    gamemode_flying::GameModeFlying,
+    gamemode_landed::{self, GameModeLanded},
+    wasm4::{BUTTON_1, BUTTON_2, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_UP, GAMEPAD1},
 };
 
 static mut PREVIOUS_GAMEPAD: u8 = 0;

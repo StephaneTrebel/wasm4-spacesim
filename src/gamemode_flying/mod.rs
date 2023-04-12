@@ -1,15 +1,19 @@
-extern crate alloc;
 use core::f32::MAX;
 
+extern crate alloc;
 use alloc::{borrow::ToOwned, vec::Vec};
 
 use fastrand::Rng;
 
-use buttons::Buttons;
-
-use maths::{distance, Coordinates3d};
-use planets::{self, Planet};
-use wasm4::{palette::set_draw_color, wasm4::*};
+use crate::{
+    buttons::Buttons,
+    graphics::{draw_debris, draw_planet, draw_star, draw_targeting},
+    maths::{distance, Coordinates3d},
+    palette::set_draw_color,
+    planets::{self, Planet},
+    player::PlayerShip,
+    wasm4::*,
+};
 
 use numtoa::NumToA;
 
@@ -166,13 +170,13 @@ fn draw(mode: &GameModeFlying, buttons: &Buttons) {
     set_draw_color(0x0001);
 
     for star in &mode.distant_stars {
-        graphics::draw_star(star);
+        draw_star(star);
     }
 
     for (index, planet) in mode.planets.iter().enumerate() {
-        graphics::draw_planet(&planet);
+        draw_planet(&planet);
         if mode.targeting_planet == Some(index) {
-            graphics::draw_targeting(planet);
+            draw_targeting(planet);
         }
     }
 
@@ -204,7 +208,7 @@ fn draw(mode: &GameModeFlying, buttons: &Buttons) {
 
     set_draw_color(0x0001);
     for debris in &mode.debris {
-        graphics::draw_debris(debris, &mode.rng);
+        draw_debris(debris, &mode.rng);
     }
 
     set_draw_color(0x0040);
@@ -283,7 +287,7 @@ pub struct GameModeFlying {
     movement: Movement,
     nearest_planet_distance: f32,
     planets: Vec<Planet>,
-    player_ship: player::PlayerShip,
+    player_ship: PlayerShip,
     rng: Rng,
     targeting_planet: PlanetTargeting,
     theta: f32,
@@ -302,7 +306,7 @@ impl GameModeFlying {
             },
             nearest_planet_distance: 0.0,
             planets: Vec::new(),
-            player_ship: player::PlayerShip::new(),
+            player_ship: PlayerShip::new(),
             rng,
             targeting_planet: None,
             theta: 0.01,

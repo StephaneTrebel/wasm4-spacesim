@@ -1,7 +1,10 @@
-use buttons::Buttons;
-use planets::{planet_hud, Planet};
-use wasm4::palette::set_draw_color;
-use wasm4::wasm4::{blit, text};
+use crate::{
+    buttons::Buttons,
+    graphics::draw_planet_landed,
+    palette::set_draw_color,
+    planets::{planet_hud, Planet},
+    wasm4::{blit, text},
+};
 
 #[derive(PartialEq, Eq, Clone)]
 #[repr(i8)]
@@ -77,7 +80,7 @@ fn update_movement(
 }
 
 fn draw(gamemode: &GameModeLanded) {
-    graphics::draw_planet_landed(&gamemode.planet);
+    draw_planet_landed(&gamemode.planet);
 
     if gamemode.submode != Mode::ShowPlanet {
         set_draw_color(0x0143);

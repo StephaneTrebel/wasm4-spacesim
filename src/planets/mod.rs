@@ -2,7 +2,7 @@ extern crate alloc;
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
 
-use maths::{distance, rotate_xz, rotate_yz, Coordinates3d};
+use crate::maths::{distance, rotate_xz, rotate_yz, Coordinates3d};
 
 pub mod planet_hud;
 

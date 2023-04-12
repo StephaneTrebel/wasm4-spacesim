@@ -10,36 +10,19 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
 name = "buddy-alloc"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ff9f338986406db85e2b5deb40a9255b796ca03a194c7457403d215173f3fd5"
-
-[[package]]
-name = "buttons"
-version = "0.1.0"
-dependencies = [
- "buddy-alloc",
- "fastrand",
- "lazy_static",
- "numtoa",
- "spin",
-]
+checksum = "3240a4cb09cf0da6a51641bd40ce90e96ea6065e3a1adc46434029254bcc2d09"
 
 [[package]]
 name = "cart"
 version = "0.1.0"
 dependencies = [
  "buddy-alloc",
- "buttons",
  "fastrand",
- "gamemode_flying",
- "gamemode_landed",
  "lazy_static",
- "maths",
  "numtoa",
- "planets",
  "spin",
- "wasm4",
 ]
 
 [[package]]
@@ -55,54 +38,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e51093e27b0797c359783294ca4f0a911c270184cb10f85783b118614a1501be"
 dependencies = [
  "instant",
-]
-
-[[package]]
-name = "gamemode_flying"
-version = "0.1.0"
-dependencies = [
- "buddy-alloc",
- "buttons",
- "fastrand",
- "graphics",
- "lazy_static",
- "maths",
- "numtoa",
- "planets",
- "player",
- "spin",
- "wasm4",
-]
-
-[[package]]
-name = "gamemode_landed"
-version = "0.1.0"
-dependencies = [
- "buddy-alloc",
- "buttons",
- "fastrand",
- "graphics",
- "lazy_static",
- "maths",
- "numtoa",
- "planets",
- "spin",
- "wasm4",
-]
-
-[[package]]
-name = "graphics"
-version = "0.1.0"
-dependencies = [
- "buddy-alloc",
- "fastrand",
- "lazy_static",
- "maths",
- "numtoa",
- "planets",
- "spin",
- "utils",
- "wasm4",
 ]
 
 [[package]]
@@ -131,48 +66,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "maths"
-version = "0.1.0"
-dependencies = [
- "buddy-alloc",
- "fastrand",
- "lazy_static",
- "numtoa",
- "spin",
-]
-
-[[package]]
 name = "numtoa"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6aa2c4e539b869820a2b82e1aef6ff40aa85e65decdd5185e83fb4b1249cd00f"
-
-[[package]]
-name = "planets"
-version = "0.1.0"
-dependencies = [
- "buddy-alloc",
- "fastrand",
- "lazy_static",
- "maths",
- "numtoa",
- "spin",
- "wasm4",
-]
-
-[[package]]
-name = "player"
-version = "0.1.0"
-dependencies = [
- "buddy-alloc",
- "buttons",
- "fastrand",
- "lazy_static",
- "maths",
- "numtoa",
- "spin",
- "utils",
-]
 
 [[package]]
 name = "scopeguard"
@@ -182,31 +79,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "spin"
-version = "0.9.5"
+version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dccf47db1b41fa1573ed27ccf5e08e3ca771cb994f776668c5ebda893b248fc"
+checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
 dependencies = [
  "lock_api",
-]
-
-[[package]]
-name = "utils"
-version = "0.1.0"
-dependencies = [
- "buddy-alloc",
- "fastrand",
- "lazy_static",
- "numtoa",
- "spin",
-]
-
-[[package]]
-name = "wasm4"
-version = "0.1.0"
-dependencies = [
- "buddy-alloc",
- "fastrand",
- "lazy_static",
- "numtoa",
- "spin",
 ]

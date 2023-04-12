@@ -1,10 +1,14 @@
 use fastrand::Rng;
 
-use maths::{project, Coordinates3d};
+use crate::{
+    maths::{project, Coordinates3d},
+    palette::set_draw_color,
+    planets::{Level, Planet},
+    utils::clamp,
+    wasm4::*,
+};
+
 use numtoa::NumToA;
-use planets::{Planet, Level};
-use utils::clamp;
-use wasm4::{palette::set_draw_color, wasm4::*};
 
 pub fn pixel(x: i32, y: i32, color: u8) {
     if x < 0 || x > 159 {

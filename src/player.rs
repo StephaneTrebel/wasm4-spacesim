@@ -1,6 +1,4 @@
-use buttons::Buttons;
-use maths::Coordinates3d;
-use utils::clamp;
+use crate::{buttons::Buttons, maths::Coordinates3d, utils::clamp};
 
 #[derive(Default, Clone, Copy)]
 pub struct PlayerShip {
