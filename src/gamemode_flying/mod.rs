@@ -72,8 +72,8 @@ fn update_movement(mode: &mut GameModeFlying, buttons: &Buttons) -> Option<Plane
     }
 }
 
-fn update_debris(mode: &mut GameModeFlying) {
-    let speed: f32 = (mode.player_ship.speed as f32).log(10_f32);
+fn update_debris(mode: &mut GameModeFlying, player_ship: &PlayerShip) {
+    let speed: f32 = (player_ship.speed as f32).log(10_f32);
     let delta_x = mode.movement.delta_x as i32 as f32;
     let delta_y = mode.movement.delta_y as i32 as f32;
     let rand = mode.rng.f32() * 40.0 - 20.0;
@@ -163,14 +163,16 @@ fn update_stars(mode: &mut GameModeFlying) {
     }
 }
 
-fn update_player_ship(mode: &mut GameModeFlying, buttons: &Buttons) {
+fn update_player_ship(player_ship: &mut PlayerShip, buttons: &Buttons) {
     if buttons.two && buttons.up {
-        mode.player_ship.increment_speed();
+        player_ship.increment_speed();
     }
     if buttons.two && buttons.down {
-        mode.player_ship.decrement_speed();
+        player_ship.decrement_speed();
     }
+}
 
+fn update_targeting(mode: &mut GameModeFlying, buttons: &Buttons) {
     if buttons.one {
         let mut targeting_something = false;
         for (index, planet) in mode.planets.iter().enumerate() {
@@ -194,7 +196,7 @@ fn update_player_ship(mode: &mut GameModeFlying, buttons: &Buttons) {
     }
 }
 
-fn draw(mode: &GameModeFlying, buttons: &Buttons) {
+fn draw(mode: &GameModeFlying, buttons: &Buttons, player_ship: &PlayerShip) {
     set_draw_color(0x0001);
 
     for star in &mode.distant_stars {
@@ -226,7 +228,7 @@ fn draw(mode: &GameModeFlying, buttons: &Buttons) {
     }
     if buttons.two {
         text(b"\x81", 150, 150);
-        let s = mode.player_ship.speed.numtoa_str(10, &mut buf);
+        let s = player_ship.speed.numtoa_str(10, &mut buf);
         if buttons.up {
             text("SPD+ ".to_owned() + s, 1, 150);
         }
@@ -255,7 +257,7 @@ fn draw(mode: &GameModeFlying, buttons: &Buttons) {
     }
 }
 
-fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32) {
+fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32, player_ship: &PlayerShip) {
     let mut tmp_distance: f32;
     let mut nearest_distance: f32 = MAX;
     let mut tmp_planet_landing_possible: Option<&Planet> = None;
@@ -281,7 +283,7 @@ fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32) {
     };
 
     for planet in mode.planets.iter_mut() {
-        planet.update(theta_xz, theta_yz, mode.player_ship.speed);
+        planet.update(theta_xz, theta_yz, player_ship.speed);
         tmp_distance = distance(planet.coordinates);
         if tmp_distance < nearest_distance {
             tmp_planet_landing_possible = Some(planet);
@@ -306,7 +308,6 @@ pub struct GameModeFlying {
     movement: Movement,
     targeted_planet_index: Option<u8>,
     planets: Vec<Planet>,
-    player_ship: PlayerShip,
     rng: Rng,
     theta: f32,
 }
@@ -324,7 +325,6 @@ impl GameModeFlying {
             },
             targeted_planet_index: None,
             planets: Vec::new(),
-            player_ship: PlayerShip::new(),
             rng,
             theta: 0.01,
         };
@@ -390,24 +390,30 @@ impl GameModeFlying {
             },
             targeted_planet_index: self.targeted_planet_index,
             planets: self.planets.clone(),
-            player_ship: self.player_ship.clone(),
             rng: self.rng.clone(),
             theta: self.theta,
         }
     }
 
-    pub fn update(&self, buttons: &Buttons, cooldown_tick: i32) -> (Self, Option<Planet>) {
+    pub fn update(
+        &self,
+        buttons: &Buttons,
+        cooldown_tick: i32,
+        player_ship: &PlayerShip,
+    ) -> (Self, Option<Planet>, PlayerShip) {
         let mut new_instance = self.copy();
+        let mut new_player_ship = player_ship.clone();
 
         let should_land = update_movement(&mut new_instance, buttons);
 
-        update_debris(&mut new_instance);
+        update_debris(&mut new_instance, &player_ship);
         update_stars(&mut new_instance);
-        update_player_ship(&mut new_instance, buttons);
+        update_player_ship(&mut new_player_ship, buttons);
+        update_targeting(&mut new_instance, buttons);
 
-        update_planets(&mut new_instance, cooldown_tick);
+        update_planets(&mut new_instance, cooldown_tick, &player_ship);
 
-        draw(&new_instance, buttons);
-        (new_instance, should_land)
+        draw(&new_instance, buttons, &player_ship);
+        (new_instance, should_land, new_player_ship)
     }
 }

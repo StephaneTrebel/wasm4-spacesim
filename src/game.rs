@@ -2,6 +2,7 @@ use crate::{
     buttons::Buttons,
     gamemode_flying::GameModeFlying,
     gamemode_landed::{self, GameModeLanded},
+    player::PlayerShip,
     wasm4::{BUTTON_1, BUTTON_2, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_UP, GAMEPAD1},
 };
 
@@ -18,6 +19,7 @@ pub struct Game {
     button_just_pressed: Buttons,
     button_pressed_this_frame: Buttons,
     current_mode: GameMode,
+    player_ship: PlayerShip,
 }
 
 impl Game {
@@ -40,6 +42,7 @@ impl Game {
                 two: false,
                 one: false,
             },
+            player_ship: PlayerShip::new(),
             current_mode: GameMode::None,
         }
     }
@@ -125,9 +128,14 @@ impl Game {
         self.update_pressed_buttons();
         match &mut self.current_mode {
             GameMode::Flying(mode) => {
-                let (new_mode, landingpossible_planet) =
-                    mode.update(&self.button_just_pressed, self.cooldown_tick);
+                let (new_mode, landingpossible_planet, new_player_ship) = mode.update(
+                    &self.button_just_pressed,
+                    self.cooldown_tick,
+                    &self.player_ship,
+                );
                 self.current_mode = GameMode::Flying(new_mode);
+                self.player_ship = new_player_ship.clone();
+
                 // Handle game mode transition
                 if let Some(planet) = landingpossible_planet {
                     if self.button_just_pressed.one {
@@ -143,6 +151,7 @@ impl Game {
                     self.cooldown_tick,
                 );
                 self.current_mode = GameMode::Landed(new_mode);
+
                 // Handle game mode transition
                 match state_transition {
                     gamemode_landed::StateTransition::ChangeTo(next_state) => {
