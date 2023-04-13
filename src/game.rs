@@ -1,7 +1,11 @@
+extern crate alloc;
+use alloc::vec::Vec;
+
 use crate::{
     buttons::Buttons,
     gamemode_flying::GameModeFlying,
     gamemode_landed::{self, GameModeLanded},
+    planets::{self, Planet},
     player::PlayerShip,
     wasm4::{BUTTON_1, BUTTON_2, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_UP, GAMEPAD1},
 };
@@ -20,11 +24,12 @@ pub struct Game {
     button_pressed_this_frame: Buttons,
     current_mode: GameMode,
     player_ship: PlayerShip,
+    planets: Vec<Planet>,
 }
 
 impl Game {
     pub fn new() -> Self {
-        Self {
+        let mut new_instance: Self = Self {
             cooldown_tick: 0,
             button_just_pressed: Buttons {
                 up: false,
@@ -43,8 +48,26 @@ impl Game {
                 one: false,
             },
             player_ship: PlayerShip::new(),
+            planets: Vec::new(),
             current_mode: GameMode::None,
-        }
+        };
+
+        new_instance.planets.push(Planet::new(
+            -300.0,
+            -300.0,
+            1000.0,
+            "Metallia",
+            planets::Type::B,
+        ));
+
+        new_instance.planets.push(Planet::new(
+            -200.0,
+            -200.0,
+            5000.0,
+            "Farm'leh",
+            planets::Type::A,
+        ));
+        new_instance
     }
 
     pub fn start(&mut self) {
@@ -128,13 +151,16 @@ impl Game {
         self.update_pressed_buttons();
         match &mut self.current_mode {
             GameMode::Flying(mode) => {
-                let (new_mode, landingpossible_planet, new_player_ship) = mode.update(
-                    &self.button_just_pressed,
-                    self.cooldown_tick,
-                    &self.player_ship,
-                );
-                self.current_mode = GameMode::Flying(new_mode);
-                self.player_ship = new_player_ship.clone();
+                let (updated_mode, landingpossible_planet, updated_player_ship, updated_planets) =
+                    mode.update(
+                        &self.button_just_pressed,
+                        self.cooldown_tick,
+                        &self.player_ship,
+                        &self.planets,
+                    );
+                self.current_mode = GameMode::Flying(updated_mode);
+                self.player_ship = updated_player_ship.clone();
+                self.planets = updated_planets.clone();
 
                 // Handle game mode transition
                 if let Some(planet) = landingpossible_planet {

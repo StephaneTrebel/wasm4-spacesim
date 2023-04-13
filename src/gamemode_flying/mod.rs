@@ -10,7 +10,7 @@ use crate::{
     graphics::{draw_debris, draw_planet, draw_star, draw_targeting},
     maths::{distance, project, Coordinates3d},
     palette::set_draw_color,
-    planets::{self, Planet},
+    planets::Planet,
     player::PlayerShip,
     wasm4::*,
 };
@@ -172,10 +172,10 @@ fn update_player_ship(player_ship: &mut PlayerShip, buttons: &Buttons) {
     }
 }
 
-fn update_targeting(mode: &mut GameModeFlying, buttons: &Buttons) {
+fn update_targeting(mode: &mut GameModeFlying, buttons: &Buttons, planets: &Vec<Planet>) {
     if buttons.one {
         let mut targeting_something = false;
-        for (index, planet) in mode.planets.iter().enumerate() {
+        for (index, planet) in planets.iter().enumerate() {
             let coordinates = project(planet.coordinates);
 
             match (
@@ -196,14 +196,14 @@ fn update_targeting(mode: &mut GameModeFlying, buttons: &Buttons) {
     }
 }
 
-fn draw(mode: &GameModeFlying, buttons: &Buttons, player_ship: &PlayerShip) {
+fn draw(mode: &GameModeFlying, buttons: &Buttons, player_ship: &PlayerShip, planets: &Vec<Planet>) {
     set_draw_color(0x0001);
 
     for star in &mode.distant_stars {
         draw_star(star);
     }
 
-    for (index, planet) in mode.planets.iter().enumerate() {
+    for (index, planet) in planets.iter().enumerate() {
         draw_planet(&planet);
 
         if mode.targeted_planet_index == Some(index as u8) {
@@ -257,7 +257,12 @@ fn draw(mode: &GameModeFlying, buttons: &Buttons, player_ship: &PlayerShip) {
     }
 }
 
-fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32, player_ship: &PlayerShip) {
+fn update_planets(
+    mode: &mut GameModeFlying,
+    cooldown_tick: i32,
+    player_ship: &PlayerShip,
+    planets: &Vec<Planet>,
+) -> Vec<Planet> {
     let mut tmp_distance: f32;
     let mut nearest_distance: f32 = MAX;
     let mut tmp_planet_landing_possible: Option<&Planet> = None;
@@ -282,7 +287,8 @@ fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32, player_ship: &P
         }
     };
 
-    for planet in mode.planets.iter_mut() {
+    let mut updated_planets = planets.clone();
+    for planet in updated_planets.iter_mut() {
         planet.update(theta_xz, theta_yz, player_ship.speed);
         tmp_distance = distance(planet.coordinates);
         if tmp_distance < nearest_distance {
@@ -299,6 +305,8 @@ fn update_planets(mode: &mut GameModeFlying, cooldown_tick: i32, player_ship: &P
     if nearest_distance > MAXIMUM_DISTANCE_FOR_LANDING {
         mode.current_flying_mode = FlyingMode::Flying;
     }
+
+    updated_planets
 }
 
 pub struct GameModeFlying {
@@ -307,7 +315,6 @@ pub struct GameModeFlying {
     distant_stars: Vec<Coordinates3d>,
     movement: Movement,
     targeted_planet_index: Option<u8>,
-    planets: Vec<Planet>,
     rng: Rng,
     theta: f32,
 }
@@ -324,7 +331,6 @@ impl GameModeFlying {
                 delta_y: DirectionY::Center,
             },
             targeted_planet_index: None,
-            planets: Vec::new(),
             rng,
             theta: 0.01,
         };
@@ -361,21 +367,6 @@ impl GameModeFlying {
             });
         }
 
-        new_instance.planets.push(Planet::new(
-            -300.0,
-            -300.0,
-            1000.0,
-            "Metallia",
-            planets::Type::B,
-        ));
-
-        new_instance.planets.push(Planet::new(
-            -200.0,
-            -200.0,
-            5000.0,
-            "Farm'leh",
-            planets::Type::A,
-        ));
         new_instance
     }
 
@@ -389,7 +380,6 @@ impl GameModeFlying {
                 delta_y: self.movement.delta_y,
             },
             targeted_planet_index: self.targeted_planet_index,
-            planets: self.planets.clone(),
             rng: self.rng.clone(),
             theta: self.theta,
         }
@@ -400,20 +390,27 @@ impl GameModeFlying {
         buttons: &Buttons,
         cooldown_tick: i32,
         player_ship: &PlayerShip,
-    ) -> (Self, Option<Planet>, PlayerShip) {
-        let mut new_instance = self.copy();
-        let mut new_player_ship = player_ship.clone();
+        planets: &Vec<Planet>,
+    ) -> (Self, Option<Planet>, PlayerShip, Vec<Planet>) {
+        let mut updated_gamemode = self.copy();
+        let mut updated_player_ship = player_ship.clone();
 
-        let should_land = update_movement(&mut new_instance, buttons);
+        let should_land = update_movement(&mut updated_gamemode, buttons);
 
-        update_debris(&mut new_instance, &player_ship);
-        update_stars(&mut new_instance);
-        update_player_ship(&mut new_player_ship, buttons);
-        update_targeting(&mut new_instance, buttons);
+        update_debris(&mut updated_gamemode, &player_ship);
+        update_stars(&mut updated_gamemode);
+        update_player_ship(&mut updated_player_ship, buttons);
+        update_targeting(&mut updated_gamemode, buttons, planets);
 
-        update_planets(&mut new_instance, cooldown_tick, &player_ship);
+        let updated_planets =
+            update_planets(&mut updated_gamemode, cooldown_tick, &player_ship, planets);
 
-        draw(&new_instance, buttons, &player_ship);
-        (new_instance, should_land, new_player_ship)
+        draw(&updated_gamemode, buttons, &player_ship, planets);
+        (
+            updated_gamemode,
+            should_land,
+            updated_player_ship,
+            updated_planets,
+        )
     }
 }
