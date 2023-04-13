@@ -1,4 +1,5 @@
 extern crate alloc;
+
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
 use hashbrown::HashMap;
@@ -122,12 +123,58 @@ pub struct PlanetItemInventory {
     pub selling_price: u32,
 }
 
+pub enum BuyingError {
+    QuantityIsZero,
+}
+
+pub enum SellingError {
+    QuantityIsZero,
+}
+
 impl PlanetItemInventory {
     pub fn new(quantity: u32, buying_price: u32, selling_price: u32) -> Self {
         Self {
             quantity,
             buying_price,
             selling_price,
+        }
+    }
+
+    /// Buy stuff (from the planet perspective)
+    pub fn buy(&mut self, quantity: u32) -> Result<(), BuyingError> {
+        if quantity == 0 {
+            Err(BuyingError::QuantityIsZero)
+        } else {
+            let old_quantity = {
+                if self.quantity == 0 {
+                    1
+                } else {
+                    self.quantity
+                }
+            };
+            self.quantity += quantity;
+            self.buying_price -= self.buying_price * quantity / old_quantity;
+            self.selling_price += self.selling_price * quantity / old_quantity;
+            Ok(())
+        }
+    }
+
+    /// Sell stuff (from the planet perspective)
+    pub fn sell(&mut self, quantity: u32) -> Result<(), SellingError> {
+        if quantity == 0 {
+            Err(SellingError::QuantityIsZero)
+        } else {
+            let old_quantity = {
+                if self.quantity == 0 {
+                    1
+                } else {
+                    self.quantity
+                }
+            };
+            self.quantity -= quantity;
+            self.buying_price += self.buying_price * quantity / old_quantity;
+            self.selling_price -= self.selling_price * quantity / old_quantity;
+            Ok(())
         }
     }
 }
