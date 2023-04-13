@@ -7,6 +7,7 @@ mod game;
 mod gamemode_flying;
 mod gamemode_landed;
 mod graphics;
+mod items;
 mod maths;
 mod palette;
 mod planets;
