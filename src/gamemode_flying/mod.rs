@@ -289,7 +289,7 @@ fn update_planets(
 
     let mut updated_planets = planets.clone();
     for planet in updated_planets.iter_mut() {
-        planet.update(theta_xz, theta_yz, player_ship.speed);
+        planet.update(theta_xz, theta_yz, player_ship.speed as i32);
         tmp_distance = distance(planet.coordinates);
         if tmp_distance < nearest_distance {
             tmp_planet_landing_possible = Some(planet);

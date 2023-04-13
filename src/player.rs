@@ -12,9 +12,9 @@ pub struct Inventory {
 #[derive(Default, Clone)]
 pub struct PlayerShip {
     pub position: Coordinates3d,
-    pub speed: i32,
+    pub speed: u32,
     pub inventory: HashMap<Item, Inventory>,
-    pub money: i32,
+    pub money: u32,
 }
 
 const MAX_SPEED: i32 = 500;
@@ -35,19 +35,97 @@ impl PlayerShip {
     }
 
     pub fn increment_speed(&mut self) {
-        self.speed = clamp(0, self.speed + 1, MAX_SPEED);
+        self.speed = clamp(0, (self.speed + 1) as i32, MAX_SPEED) as u32;
     }
 
     pub fn decrement_speed(&mut self) {
-        self.speed = clamp(0, self.speed - 1, MAX_SPEED);
+        self.speed = clamp(0, (self.speed - 1) as i32, MAX_SPEED) as u32;
     }
 
-    pub fn increment_money(&mut self) {
-        self.money = clamp(0, self.money + 1, MAX);
+    pub fn increment_money(&mut self, amount: u32) {
+        self.money = clamp(0, (self.money + amount) as i32, MAX) as u32;
     }
 
-    pub fn decrement_money(&mut self) {
-        self.money = clamp(0, self.money - 1, MAX);
+    pub fn decrement_money(&mut self, amount: u32) {
+        self.money = clamp(0, (self.money - amount) as i32, MAX) as u32;
+    }
+}
+
+pub enum BuyingError {
+    QuantityIsZero,
+    NotEnoughMoney,
+}
+
+impl PlayerShip {
+    /// Buy stuff (from the player perspective)
+    pub fn buy(
+        &mut self,
+        item: &Item,
+        quantity: u32,
+        buying_price: u32,
+    ) -> Result<(), BuyingError> {
+        if quantity == 0 {
+            return Err(BuyingError::QuantityIsZero);
+        }
+
+        let total = quantity * buying_price;
+        if self.money < total {
+            return Err(BuyingError::NotEnoughMoney);
+        }
+
+        let previous_inventory = self.inventory.get(item);
+
+        let new_quantity = match previous_inventory {
+            None => quantity,
+            Some(inventory) => inventory.quantity + quantity,
+        };
+
+        self.decrement_money(total);
+        self.inventory.insert(
+            item.clone(),
+            Inventory {
+                quantity: new_quantity,
+            },
+        );
+        Ok(())
+    }
+}
+
+pub enum SellingError {
+    QuantityIsZero,
+    NotEnoughToSell,
+}
+
+impl PlayerShip {
+    /// Sell stuff (from the player perspective)
+    pub fn sell(
+        &mut self,
+        item: &Item,
+        quantity: u32,
+        selling_price: u32,
+    ) -> Result<(), SellingError> {
+        if quantity == 0 {
+            return Err(SellingError::QuantityIsZero);
+        }
+        let previous_inventory = self.inventory.get(item);
+
+        let new_quantity: i32 = match previous_inventory {
+            None => quantity as i32,
+            Some(inventory) => inventory.quantity as i32 - quantity as i32,
+        };
+
+        if new_quantity < 0 {
+            return Err(SellingError::NotEnoughToSell);
+        }
+
+        self.increment_money(quantity * selling_price);
+        self.inventory.insert(
+            item.clone(),
+            Inventory {
+                quantity: new_quantity as u32,
+            },
+        );
+        Ok(())
     }
 
     /// Add item to player ship inventory
