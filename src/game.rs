@@ -1,11 +1,13 @@
 extern crate alloc;
 use alloc::vec::Vec;
+use hashbrown::HashMap;
 
 use crate::{
     buttons::Buttons,
     gamemode_flying::GameModeFlying,
     gamemode_landed::{self, GameModeLanded},
-    planets::{self, Planet},
+    items::Item,
+    planets::{self, PlanetItemInventory, Planet},
     player::PlayerShip,
     wasm4::{BUTTON_1, BUTTON_2, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_UP, GAMEPAD1},
 };
@@ -58,6 +60,12 @@ impl Game {
             1000.0,
             "Metallia",
             planets::Type::B,
+            {
+                let mut inventory = HashMap::new();
+                inventory.insert(Item::IronIngot, PlanetItemInventory::new(1000, 10, 100));
+                inventory.insert(Item::FoodCrate, PlanetItemInventory::new(100, 100, 10));
+                inventory
+            },
         ));
 
         new_instance.planets.push(Planet::new(
@@ -66,6 +74,12 @@ impl Game {
             5000.0,
             "Farm'leh",
             planets::Type::A,
+            {
+                let mut inventory = HashMap::new();
+                inventory.insert(Item::IronIngot, PlanetItemInventory::new(100, 100, 10));
+                inventory.insert(Item::FoodCrate, PlanetItemInventory::new(1000, 10, 100));
+                inventory
+            },
         ));
         new_instance
     }

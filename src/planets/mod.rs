@@ -1,7 +1,9 @@
 extern crate alloc;
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
+use hashbrown::HashMap;
 
+use crate::items::Item;
 use crate::maths::{distance, rotate_xz, rotate_yz, Coordinates3d};
 
 pub mod planet_hud;
@@ -113,22 +115,48 @@ impl Type {
     }
 }
 
+#[derive(Clone, Eq, Hash, PartialEq)]
+pub struct PlanetItemInventory {
+    pub quantity: u32,
+    pub buying_price: u32,
+    pub selling_price: u32,
+}
+
+impl PlanetItemInventory {
+    pub fn new(quantity: u32, buying_price: u32, selling_price: u32) -> Self {
+        Self {
+            quantity,
+            buying_price,
+            selling_price,
+        }
+    }
+}
+
 #[derive(Clone, PartialEq)]
 pub struct Planet {
     pub coordinates: Coordinates3d,
     pub name: String,
     pub distance: f32,
     pub planet_type: Type,
+    pub inventory: HashMap<Item, PlanetItemInventory>,
 }
 
 impl Planet {
-    pub fn new(x: f32, y: f32, z: f32, name: &str, planet_type: Type) -> Self {
+    pub fn new(
+        x: f32,
+        y: f32,
+        z: f32,
+        name: &str,
+        planet_type: Type,
+        inventory: HashMap<Item, PlanetItemInventory>,
+    ) -> Self {
         let coords = Coordinates3d { x, y, z, w: 1.0 };
         Self {
             coordinates: coords,
             name: name.to_string(),
             distance: distance(coords),
             planet_type,
+            inventory,
         }
     }
 
