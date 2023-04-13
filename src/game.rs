@@ -197,7 +197,7 @@ impl Game {
                     gamemode_landed::StateTransition::ChangeTo(next_state) => {
                         self.cooldown_tick = 10;
                         match next_state {
-                            gamemode_landed::Mode::ExitMode => {
+                            gamemode_landed::Mode::FlyAway => {
                                 // TODO Replace ::new with a factory that will create a flying mode
                                 // from the current planet and with the current ship
                                 self.current_mode = GameMode::Flying(GameModeFlying::new());

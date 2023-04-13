@@ -8,15 +8,18 @@ use crate::{
 #[derive(PartialEq, Eq, Clone)]
 #[repr(i8)]
 pub enum Mode {
-    Menu,
-    ExitMode,
+    MainMenu,
+    BuyMenu,
+    SellMenu,
+    FlyAway,
 }
 
 #[derive(PartialEq, Eq, Clone)]
 #[repr(i8)]
 pub enum MenuOption {
-    FlyOut,
+    FlyAway,
     Buy,
+    Sell,
 }
 
 #[derive(PartialEq, Eq, Clone)]
@@ -33,10 +36,10 @@ fn update_movement(
     cooldown_tick: i32,
 ) -> StateTransition {
     match gamemode.submode {
-        Mode::Menu => {
+        Mode::MainMenu => {
             let mut tmp_select = gamemode.selected_planet_menu_option.clone() as u8;
             if pressed_this_frame.down {
-                if tmp_select < 2 {
+                if tmp_select < 3 {
                     tmp_select = tmp_select + 1;
                 }
             }
@@ -46,18 +49,21 @@ fn update_movement(
                 }
             }
             gamemode.selected_planet_menu_option = match tmp_select {
-                0 => MenuOption::FlyOut,
-                _ => MenuOption::Buy,
+                0 => MenuOption::FlyAway,
+                1 => MenuOption::Buy,
+                _ => MenuOption::Sell,
             };
 
             if just_pressed.one && cooldown_tick == 0 {
                 match gamemode.selected_planet_menu_option {
-                    MenuOption::FlyOut => return StateTransition::ChangeTo(Mode::ExitMode),
+                    MenuOption::FlyAway => return StateTransition::ChangeTo(Mode::FlyAway),
                     _ => return StateTransition::NoChange,
                 }
             }
         }
-        _ => {}
+        Mode::BuyMenu => {}
+        Mode::SellMenu => {}
+        Mode::FlyAway => {}
     }
     StateTransition::NoChange
 }
@@ -75,15 +81,25 @@ fn draw(gamemode: &GameModeLanded) {
 
     set_draw_color(0x0012);
     text(&gamemode.planet.name, 27, 5);
-    text("Fly out", 37, 27);
-    text("Buy", 37, 47);
-    match gamemode.selected_planet_menu_option {
-        MenuOption::FlyOut => {
-            text(b"\x85", 27, 27);
+
+    match gamemode.submode {
+        Mode::MainMenu => {
+            text("Fly out", 37, 27);
+            text("Buy", 37, 47);
+            text("Sell", 37, 67);
+            text(
+                b"\x85",
+                27,
+                match gamemode.selected_planet_menu_option {
+                    MenuOption::FlyAway => 27,
+                    MenuOption::Buy => 47,
+                    MenuOption::Sell => 67,
+                },
+            );
         }
-        MenuOption::Buy => {
-            text(b"\x85", 27, 47);
-        }
+        Mode::BuyMenu => {}
+        Mode::SellMenu => {}
+        Mode::FlyAway => {}
     }
 }
 
@@ -96,8 +112,8 @@ pub struct GameModeLanded {
 impl GameModeLanded {
     pub fn new(planet: Planet) -> Self {
         Self {
-            submode: Mode::Menu,
-            selected_planet_menu_option: MenuOption::FlyOut,
+            submode: Mode::MainMenu,
+            selected_planet_menu_option: MenuOption::FlyAway,
             planet: planet.clone(),
         }
     }
@@ -124,8 +140,8 @@ impl GameModeLanded {
             cooldown_tick,
         );
         match state_transition {
-            StateTransition::ChangeTo(Mode::Menu) => {
-                new_instance.submode = Mode::Menu;
+            StateTransition::ChangeTo(Mode::MainMenu) => {
+                new_instance.submode = Mode::MainMenu;
             }
             _ => {}
         }
