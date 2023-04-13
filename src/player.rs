@@ -14,6 +14,7 @@ pub struct PlayerShip {
     pub position: Coordinates3d,
     pub speed: i32,
     pub inventory: HashMap<Item, Inventory>,
+    pub money: i32,
 }
 
 const MAX_SPEED: i32 = 500;
@@ -29,6 +30,7 @@ impl PlayerShip {
             },
             speed: 100,
             inventory: HashMap::new(),
+            money: 1000,
         }
     }
 
@@ -38,6 +40,14 @@ impl PlayerShip {
 
     pub fn decrement_speed(&mut self) {
         self.speed = clamp(0, self.speed - 1, MAX_SPEED);
+    }
+
+    pub fn increment_money(&mut self) {
+        self.money = clamp(0, self.money + 1, MAX);
+    }
+
+    pub fn decrement_money(&mut self) {
+        self.money = clamp(0, self.money - 1, MAX);
     }
 
     /// Add item to player ship inventory
