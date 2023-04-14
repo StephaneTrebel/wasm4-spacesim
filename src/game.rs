@@ -179,7 +179,7 @@ impl Game {
                 // Handle game mode transition
                 if let Some(planet) = landingpossible_planet {
                     if self.button_just_pressed.one {
-                        self.current_mode = GameMode::Landed(GameModeLanded::new(planet.clone()));
+                        self.current_mode = GameMode::Landed(GameModeLanded::new(&planet));
                         self.cooldown_tick = 10;
                     }
                 }
@@ -197,7 +197,7 @@ impl Game {
                     gamemode_landed::StateTransition::ChangeTo(next_state) => {
                         self.cooldown_tick = 10;
                         match next_state {
-                            gamemode_landed::Mode::FlyAway => {
+                            gamemode_landed::Action::FlyAway => {
                                 // TODO Replace ::new with a factory that will create a flying mode
                                 // from the current planet and with the current ship
                                 self.current_mode = GameMode::Flying(GameModeFlying::new());
