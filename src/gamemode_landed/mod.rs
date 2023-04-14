@@ -5,15 +5,16 @@ use crate::{
     wasm4::{blit, text},
 };
 
-use self::submenu_main::MainMenu;
+use self::{submenu_buy::BuyMenu, submenu_main::MainMenu};
 
+mod submenu_buy;
 mod submenu_main;
 
 #[derive(PartialEq, Clone)]
 #[repr(i8)]
 pub enum Mode {
     SubmenuMain(MainMenu),
-    // SubmenuBuy(BuyMenu),
+    SubmenuBuy(BuyMenu),
     // SubmenuSell(SellMenu),
     FlyAway,
 }
@@ -22,7 +23,7 @@ pub enum Mode {
 #[repr(i8)]
 pub enum Action {
     MainMenu,
-    // BuyMenu,
+    BuyMenu,
     // SellMenu,
     FlyAway,
 }
@@ -32,26 +33,6 @@ pub enum Action {
 pub enum StateTransition {
     NoChange,
     ChangeTo(Action),
-}
-
-fn draw(mode: &GameModeLanded) {
-    set_draw_color(0x0143);
-    blit(
-        &planet_hud::PLANET_HUD,
-        20,
-        20,
-        planet_hud::PLANET_HUD_WIDTH,
-        planet_hud::PLANET_HUD_HEIGHT,
-        planet_hud::PLANET_HUD_FLAGS,
-    );
-
-    set_draw_color(0x0012);
-    text(&mode.planet.name, 27, 5);
-
-    match &mode.menu {
-        Mode::SubmenuMain(menu) => menu.draw(),
-        Mode::FlyAway => {}
-    }
 }
 
 pub struct GameModeLanded {
@@ -74,6 +55,27 @@ impl GameModeLanded {
         }
     }
 
+    pub fn draw(&self) {
+        set_draw_color(0x0143);
+        blit(
+            &planet_hud::PLANET_HUD,
+            20,
+            20,
+            planet_hud::PLANET_HUD_WIDTH,
+            planet_hud::PLANET_HUD_HEIGHT,
+            planet_hud::PLANET_HUD_FLAGS,
+        );
+
+        set_draw_color(0x0012);
+        text(&self.planet.name, 27, 5);
+
+        match &self.menu {
+            Mode::SubmenuMain(menu) => menu.draw(),
+            Mode::SubmenuBuy(menu) => menu.draw(),
+            Mode::FlyAway => {}
+        }
+    }
+
     pub fn update(
         &self,
         just_pressed: &Buttons,
@@ -89,17 +91,29 @@ impl GameModeLanded {
                 new_instance.menu = Mode::SubmenuMain(updated_menu);
                 state_transition
             }
-            Mode::FlyAway => StateTransition::NoChange,
+            Mode::SubmenuBuy(menu) => {
+                let (updated_menu, state_transition) =
+                    menu.update_movement(just_pressed, pressed_this_frame, cooldown_tick);
+                new_instance.menu = Mode::SubmenuBuy(updated_menu);
+                state_transition
+            }
+            Mode::FlyAway => StateTransition::ChangeTo(Action::FlyAway),
         };
 
         match state_transition {
             StateTransition::ChangeTo(Action::MainMenu) => {
                 new_instance.menu = Mode::SubmenuMain(MainMenu::new(&new_instance.planet));
             }
-            _ => {}
-        }
+            StateTransition::ChangeTo(Action::BuyMenu) => {
+                new_instance.menu = Mode::SubmenuBuy(BuyMenu::new(&new_instance.planet));
+            }
+            StateTransition::ChangeTo(Action::FlyAway) => {
+                new_instance.menu = Mode::FlyAway;
+            }
+            StateTransition::NoChange => {}
+        };
 
-        draw(&new_instance);
+        self.draw();
         (new_instance, state_transition)
     }
 }

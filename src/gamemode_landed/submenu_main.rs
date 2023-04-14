@@ -39,33 +39,35 @@ impl MainMenu {
     ) -> (Self, StateTransition) {
         let mut new_instance = self.copy();
 
-        let state_transition: StateTransition = {
-            let mut tmp_select = new_instance.selected_option.clone() as u8;
-            if pressed_this_frame.down {
-                if tmp_select < 3 {
-                    tmp_select = tmp_select + 1;
-                }
+        let mut tmp_select = new_instance.selected_option.clone() as u8;
+        if pressed_this_frame.down {
+            if tmp_select < 3 {
+                tmp_select = tmp_select + 1;
             }
-            if pressed_this_frame.up {
-                if tmp_select > 0 {
-                    tmp_select = tmp_select - 1;
-                }
+        }
+        if pressed_this_frame.up {
+            if tmp_select > 0 {
+                tmp_select = tmp_select - 1;
             }
-            new_instance.selected_option = match tmp_select {
-                0 => MainMenuOption::FlyAway,
-                1 => MainMenuOption::Buy,
-                _ => MainMenuOption::Sell,
-            };
-            if just_pressed.one && cooldown_tick == 0 {
-                match self.selected_option {
-                    MainMenuOption::FlyAway => StateTransition::ChangeTo(Action::FlyAway),
-                    // MainMenuOption::Buy => StateTransition::ChangeTo(Action::Buy),
-                    // MainMenuOption::Sell => StateTransition::ChangeTo(Action::Sell),
-                    _ => StateTransition::NoChange,
-                };
-            }
-            StateTransition::NoChange
+        }
+        new_instance.selected_option = match tmp_select {
+            0 => MainMenuOption::FlyAway,
+            1 => MainMenuOption::Buy,
+            _ => MainMenuOption::Sell,
         };
+
+        let state_transition: StateTransition = {
+            if just_pressed.one && cooldown_tick == 0 {
+                match new_instance.selected_option {
+                    MainMenuOption::FlyAway => StateTransition::ChangeTo(Action::FlyAway),
+                    MainMenuOption::Buy => StateTransition::ChangeTo(Action::BuyMenu),
+                    _ => StateTransition::NoChange,
+                }
+            } else {
+                StateTransition::NoChange
+            }
+        };
+
         (new_instance, state_transition)
     }
 

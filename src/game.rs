@@ -7,7 +7,7 @@ use crate::{
     gamemode_flying::GameModeFlying,
     gamemode_landed::{self, GameModeLanded},
     items::Item,
-    planets::{self, PlanetItemInventory, Planet},
+    planets::{self, Planet, PlanetItemInventory},
     player::PlayerShip,
     wasm4::{BUTTON_1, BUTTON_2, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_UP, GAMEPAD1},
 };
@@ -185,12 +185,11 @@ impl Game {
                 }
             }
             GameMode::Landed(mode) => {
-                let (new_mode, state_transition) = mode.update(
+                let (updated_mode, state_transition) = mode.update(
                     &self.button_just_pressed,
                     &self.button_pressed_this_frame,
                     self.cooldown_tick,
                 );
-                self.current_mode = GameMode::Landed(new_mode);
 
                 // Handle game mode transition
                 match state_transition {
@@ -202,10 +201,15 @@ impl Game {
                                 // from the current planet and with the current ship
                                 self.current_mode = GameMode::Flying(GameModeFlying::new());
                             }
-                            _ => {}
+                            gamemode_landed::Action::BuyMenu
+                            | gamemode_landed::Action::MainMenu => {
+                                self.current_mode = GameMode::Landed(updated_mode)
+                            }
                         }
                     }
-                    gamemode_landed::StateTransition::NoChange => {}
+                    gamemode_landed::StateTransition::NoChange => {
+                        self.current_mode = GameMode::Landed(updated_mode)
+                    }
                 }
             }
             _ => {}
