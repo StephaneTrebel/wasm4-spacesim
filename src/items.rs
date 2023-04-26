@@ -1,4 +1,4 @@
-#[derive(Clone, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Eq, Hash, PartialEq)]
 pub enum Item {
     IronIngot,
     FoodCrate,

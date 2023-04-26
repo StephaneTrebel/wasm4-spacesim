@@ -116,19 +116,11 @@ impl Type {
     }
 }
 
-#[derive(Clone, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Eq, Hash, PartialEq)]
 pub struct PlanetItemInventory {
     pub quantity: u32,
     pub buying_price: u32,
     pub selling_price: u32,
-}
-
-pub enum BuyingError {
-    QuantityIsZero,
-}
-
-pub enum SellingError {
-    QuantityIsZero,
 }
 
 impl PlanetItemInventory {
@@ -139,44 +131,16 @@ impl PlanetItemInventory {
             selling_price,
         }
     }
+}
 
-    /// Buy stuff (from the planet perspective)
-    pub fn buy(&mut self, quantity: u32) -> Result<(), BuyingError> {
-        if quantity == 0 {
-            Err(BuyingError::QuantityIsZero)
-        } else {
-            let old_quantity = {
-                if self.quantity == 0 {
-                    1
-                } else {
-                    self.quantity
-                }
-            };
-            self.quantity += quantity;
-            self.buying_price -= self.buying_price * quantity / old_quantity;
-            self.selling_price += self.selling_price * quantity / old_quantity;
-            Ok(())
-        }
-    }
+pub enum BuyingError {
+    ItemCannotBeBoughtHere,
+    QuantityIsZero,
+}
 
-    /// Sell stuff (from the planet perspective)
-    pub fn sell(&mut self, quantity: u32) -> Result<(), SellingError> {
-        if quantity == 0 {
-            Err(SellingError::QuantityIsZero)
-        } else {
-            let old_quantity = {
-                if self.quantity == 0 {
-                    1
-                } else {
-                    self.quantity
-                }
-            };
-            self.quantity -= quantity;
-            self.buying_price += self.buying_price * quantity / old_quantity;
-            self.selling_price -= self.selling_price * quantity / old_quantity;
-            Ok(())
-        }
-    }
+pub enum SellingError {
+    ItemNotInInventory,
+    QuantityIsZero,
 }
 
 #[derive(Clone, PartialEq)]
@@ -229,4 +193,62 @@ impl Planet {
         self.coordinates.z -= player_speed as f32 / 1000.0;
         self.distance = distance(self.coordinates);
     }
+
+    /// Buy stuff (from the planet perspective)
+    pub fn can_buy(&mut self, item: &Item, quantity: u32) -> Result<(), BuyingError> {
+        if quantity == 0 {
+            return Err(BuyingError::QuantityIsZero);
+        }
+        match self.inventory.get(item) {
+            None => Err(BuyingError::ItemCannotBeBoughtHere),
+            Some(_inventory) => Ok(()),
+        }
+    }
+    pub fn buy(&mut self, item: &Item, quantity: u32) {
+        match self.inventory.get_mut(item) {
+            None => {}
+            Some(inventory) => {
+                let old_quantity = {
+                    if inventory.quantity == 0 {
+                        1
+                    } else {
+                        inventory.quantity
+                    }
+                };
+                inventory.quantity += quantity;
+                inventory.buying_price += inventory.buying_price * quantity / old_quantity;
+                inventory.selling_price -= inventory.selling_price * quantity / old_quantity;
+            }
+        }
+    }
+
+    /// Sell stuff (from the planet perspective)
+    pub fn can_sell(&mut self, item: &Item, quantity: u32) -> Result<(), SellingError> {
+        if quantity == 0 {
+            return Err(SellingError::QuantityIsZero);
+        }
+        match self.inventory.get(item) {
+            None => Err(SellingError::ItemNotInInventory),
+            Some(_) => Ok(()),
+        }
+    }
+    pub fn sell(&mut self, item: &Item, quantity: u32) {
+        match self.inventory.get_mut(item) {
+            None => {}
+            Some(inventory) => {
+                let old_quantity = {
+                    if inventory.quantity == 0 {
+                        1
+                    } else {
+                        inventory.quantity
+                    }
+                };
+                inventory.quantity -= quantity;
+                inventory.buying_price -= inventory.buying_price * quantity / old_quantity;
+                inventory.selling_price += inventory.selling_price * quantity / old_quantity;
+            }
+        }
+    }
 }
+
+pub type Planets = HashMap<String, Planet>;

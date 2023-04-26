@@ -3,24 +3,21 @@ use alloc::borrow::ToOwned;
 
 use numtoa::NumToA;
 
-use crate::{
-    buttons::Buttons, items::Item, maths::Quantity, planets::Planet, player::PlayerShip,
-    wasm4::text,
-};
+use crate::{buttons::Buttons, items::Item, planets::Planet, player::PlayerShip, wasm4::text};
 
 use super::{Action, StateTransition};
 
 #[derive(PartialEq, Clone)]
-pub struct BuyMenu {
+pub struct SellMenu {
     selected_option: u8,
     planet: Planet,
     player_ship: PlayerShip,
     bought_stuff: Option<(Item, u32)>,
 }
 
-const QUANTITY: Quantity = 10;
+const QUANTITY: u32 = 10;
 
-impl BuyMenu {
+impl SellMenu {
     pub fn new(
         planet: &Planet,
         player_ship: &PlayerShip,
@@ -80,16 +77,13 @@ impl BuyMenu {
                         .into_iter()
                         .nth((new_instance.selected_option - 1) as usize)
                     {
-                        if let Ok(_) = new_instance.planet.can_sell(&item, QUANTITY) {
-                            if let Ok(_) = new_instance
-                                .player_ship
-                                .can_buy(QUANTITY, inventory.selling_price)
-                            {
-                                state_transition = StateTransition::ChangeTo(Action::Buy(
+                        if let Ok(_) = new_instance.planet.can_buy(&item, QUANTITY) {
+                            if let Ok(_) = new_instance.player_ship.can_sell(&item, QUANTITY) {
+                                state_transition = StateTransition::ChangeTo(Action::Sell(
                                     new_instance.planet.name.clone(),
                                     item,
                                     QUANTITY,
-                                    inventory.buying_price,
+                                    inventory.selling_price,
                                 ));
                             }
                         }
@@ -103,15 +97,8 @@ impl BuyMenu {
 
     pub fn draw(&self, cooldown_tick: i32) {
         text("Back", 37, 27);
-        for (index, item) in self.planet.inventory.clone().into_iter().enumerate() {
+        for (index, item) in self.player_ship.inventory.clone().into_iter().enumerate() {
             text(item.0.get_name(), 37, 47 + index as i32 * 20);
-            let mut buf = [0u8; 32];
-            let selling_price = item.1.selling_price.numtoa_str(10, &mut buf);
-            text(
-                selling_price.to_owned() + " CRD",
-                100 - (selling_price.len() as i32) * 8,
-                57 + index as i32 * 20,
-            );
         }
         text(b"\x85", 27, 27 + self.selected_option as i32 * 20);
         if cooldown_tick > 0 {
@@ -119,20 +106,13 @@ impl BuyMenu {
                 Some((item, quantity)) => {
                     let mut buf = [0u8; 32];
                     text(
-                        "+ ".to_owned() + item.get_name() + " " + quantity.numtoa_str(10, &mut buf),
+                        "- ".to_owned() + item.get_name() + " " + quantity.numtoa_str(10, &mut buf),
                         27,
                         147,
                     );
                 }
                 None => {}
             }
-        } else {
-            let mut buf = [0u8; 32];
-            text(
-                "MONEY: ".to_owned() + self.player_ship.money.numtoa_str(10, &mut buf) + " CRD",
-                27,
-                147,
-            );
         }
     }
 }

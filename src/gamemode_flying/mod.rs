@@ -10,7 +10,7 @@ use crate::{
     graphics::{draw_debris, draw_planet, draw_star, draw_targeting},
     maths::{distance, project, Coordinates3d},
     palette::set_draw_color,
-    planets::Planet,
+    planets::{Planet, Planets},
     player::PlayerShip,
     wasm4::*,
 };
@@ -172,10 +172,10 @@ fn update_player_ship(player_ship: &mut PlayerShip, buttons: &Buttons) {
     }
 }
 
-fn update_targeting(mode: &mut GameModeFlying, buttons: &Buttons, planets: &Vec<Planet>) {
+fn update_targeting(mode: &mut GameModeFlying, buttons: &Buttons, planets: &Planets) {
     if buttons.one {
         let mut targeting_something = false;
-        for (index, planet) in planets.iter().enumerate() {
+        for (index, (_, planet)) in planets.iter().enumerate() {
             let coordinates = project(planet.coordinates);
 
             match (
@@ -196,14 +196,14 @@ fn update_targeting(mode: &mut GameModeFlying, buttons: &Buttons, planets: &Vec<
     }
 }
 
-fn draw(mode: &GameModeFlying, buttons: &Buttons, player_ship: &PlayerShip, planets: &Vec<Planet>) {
+fn draw(mode: &GameModeFlying, buttons: &Buttons, player_ship: &PlayerShip, planets: &Planets) {
     set_draw_color(0x0001);
 
     for star in &mode.distant_stars {
         draw_star(star);
     }
 
-    for (index, planet) in planets.iter().enumerate() {
+    for (index, (_, planet)) in planets.iter().enumerate() {
         draw_planet(&planet);
 
         if mode.targeted_planet_index == Some(index as u8) {
@@ -261,8 +261,8 @@ fn update_planets(
     mode: &mut GameModeFlying,
     cooldown_tick: i32,
     player_ship: &PlayerShip,
-    planets: &Vec<Planet>,
-) -> Vec<Planet> {
+    planets: &Planets,
+) -> Planets {
     let mut tmp_distance: f32;
     let mut nearest_distance: f32 = MAX;
     let mut tmp_planet_landing_possible: Option<&Planet> = None;
@@ -288,7 +288,7 @@ fn update_planets(
     };
 
     let mut updated_planets = planets.clone();
-    for planet in updated_planets.iter_mut() {
+    for (_, planet) in updated_planets.iter_mut() {
         planet.update(theta_xz, theta_yz, player_ship.speed as i32);
         tmp_distance = distance(planet.coordinates);
         if tmp_distance < nearest_distance {
@@ -390,8 +390,8 @@ impl GameModeFlying {
         buttons: &Buttons,
         cooldown_tick: i32,
         player_ship: &PlayerShip,
-        planets: &Vec<Planet>,
-    ) -> (Self, Option<Planet>, PlayerShip, Vec<Planet>) {
+        planets: &Planets,
+    ) -> (Self, Option<Planet>, PlayerShip, Planets) {
         let mut updated_gamemode = self.copy();
         let mut updated_player_ship = player_ship.clone();
 

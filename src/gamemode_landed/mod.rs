@@ -1,21 +1,28 @@
+extern crate alloc;
+use alloc::string::String;
+
 use crate::{
     buttons::Buttons,
+    items::Item,
+    maths::Quantity,
     palette::set_draw_color,
     planets::{planet_hud, Planet},
+    player::PlayerShip,
     wasm4::{blit, text},
 };
 
-use self::{submenu_buy::BuyMenu, submenu_main::MainMenu};
+use self::{submenu_buy::BuyMenu, submenu_main::MainMenu, submenu_sell::SellMenu};
 
 mod submenu_buy;
 mod submenu_main;
+mod submenu_sell;
 
 #[derive(PartialEq, Clone)]
 #[repr(i8)]
 pub enum Mode {
     SubmenuMain(MainMenu),
     SubmenuBuy(BuyMenu),
-    // SubmenuSell(SellMenu),
+    SubmenuSell(SellMenu),
     FlyAway,
 }
 
@@ -23,8 +30,13 @@ pub enum Mode {
 #[repr(i8)]
 pub enum Action {
     MainMenu,
+
     BuyMenu,
-    // SellMenu,
+    Buy(String, Item, Quantity, u32),
+
+    SellMenu,
+    Sell(String, Item, Quantity, u32),
+
     FlyAway,
 }
 
@@ -38,13 +50,15 @@ pub enum StateTransition {
 pub struct GameModeLanded {
     menu: Mode,
     planet: Planet,
+    player_ship: PlayerShip,
 }
 
 impl GameModeLanded {
-    pub fn new(planet: &Planet) -> Self {
+    pub fn new(planet: &Planet, player_ship: &PlayerShip) -> Self {
         Self {
             menu: Mode::SubmenuMain(MainMenu::new(&planet)),
             planet: planet.clone(),
+            player_ship: player_ship.clone(),
         }
     }
 
@@ -52,10 +66,11 @@ impl GameModeLanded {
         Self {
             menu: self.menu.clone(),
             planet: self.planet.clone(),
+            player_ship: self.player_ship.clone(),
         }
     }
 
-    pub fn draw(&self) {
+    pub fn draw(&self, cooldown_tick: i32) {
         set_draw_color(0x0143);
         blit(
             &planet_hud::PLANET_HUD,
@@ -71,7 +86,8 @@ impl GameModeLanded {
 
         match &self.menu {
             Mode::SubmenuMain(menu) => menu.draw(),
-            Mode::SubmenuBuy(menu) => menu.draw(),
+            Mode::SubmenuBuy(menu) => menu.draw(cooldown_tick),
+            Mode::SubmenuSell(menu) => menu.draw(cooldown_tick),
             Mode::FlyAway => {}
         }
     }
@@ -97,6 +113,12 @@ impl GameModeLanded {
                 new_instance.menu = Mode::SubmenuBuy(updated_menu);
                 state_transition
             }
+            Mode::SubmenuSell(menu) => {
+                let (updated_menu, state_transition) =
+                    menu.update_movement(just_pressed, pressed_this_frame, cooldown_tick);
+                new_instance.menu = Mode::SubmenuSell(updated_menu);
+                state_transition
+            }
             Mode::FlyAway => StateTransition::ChangeTo(Action::FlyAway),
         };
 
@@ -105,7 +127,26 @@ impl GameModeLanded {
                 new_instance.menu = Mode::SubmenuMain(MainMenu::new(&new_instance.planet));
             }
             StateTransition::ChangeTo(Action::BuyMenu) => {
-                new_instance.menu = Mode::SubmenuBuy(BuyMenu::new(&new_instance.planet));
+                new_instance.menu =
+                    Mode::SubmenuBuy(BuyMenu::new(&new_instance.planet, &self.player_ship, None));
+            }
+            StateTransition::ChangeTo(Action::SellMenu) => {
+                new_instance.menu =
+                    Mode::SubmenuSell(SellMenu::new(&new_instance.planet, &self.player_ship, None));
+            }
+            StateTransition::ChangeTo(Action::Buy(_, item, quantity, _)) => {
+                new_instance.menu = Mode::SubmenuBuy(BuyMenu::new(
+                    &new_instance.planet,
+                    &self.player_ship,
+                    Some((&item, quantity)),
+                ));
+            }
+            StateTransition::ChangeTo(Action::Sell(_, item, quantity, _)) => {
+                new_instance.menu = Mode::SubmenuSell(SellMenu::new(
+                    &new_instance.planet,
+                    &self.player_ship,
+                    Some((&item, quantity)),
+                ));
             }
             StateTransition::ChangeTo(Action::FlyAway) => {
                 new_instance.menu = Mode::FlyAway;
@@ -113,7 +154,7 @@ impl GameModeLanded {
             StateTransition::NoChange => {}
         };
 
-        self.draw();
+        self.draw(cooldown_tick);
         (new_instance, state_transition)
     }
 }

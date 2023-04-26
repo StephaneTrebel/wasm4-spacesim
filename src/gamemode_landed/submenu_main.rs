@@ -61,7 +61,7 @@ impl MainMenu {
                 match new_instance.selected_option {
                     MainMenuOption::FlyAway => StateTransition::ChangeTo(Action::FlyAway),
                     MainMenuOption::Buy => StateTransition::ChangeTo(Action::BuyMenu),
-                    _ => StateTransition::NoChange,
+                    MainMenuOption::Sell => StateTransition::ChangeTo(Action::SellMenu),
                 }
             } else {
                 StateTransition::NoChange

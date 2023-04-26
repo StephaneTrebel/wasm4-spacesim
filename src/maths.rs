@@ -116,3 +116,5 @@ pub fn distance(coords: Coordinates3d) -> f32 {
         .sqrt()
         .floor()
 }
+
+pub type Quantity = u32;

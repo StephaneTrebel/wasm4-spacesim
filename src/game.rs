@@ -1,5 +1,5 @@
 extern crate alloc;
-use alloc::vec::Vec;
+use alloc::string::String;
 use hashbrown::HashMap;
 
 use crate::{
@@ -7,7 +7,7 @@ use crate::{
     gamemode_flying::GameModeFlying,
     gamemode_landed::{self, GameModeLanded},
     items::Item,
-    planets::{self, Planet, PlanetItemInventory},
+    planets::{self, Planet, PlanetItemInventory, Planets},
     player::PlayerShip,
     wasm4::{BUTTON_1, BUTTON_2, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_UP, GAMEPAD1},
 };
@@ -26,7 +26,7 @@ pub struct Game {
     button_pressed_this_frame: Buttons,
     current_mode: GameMode,
     player_ship: PlayerShip,
-    planets: Vec<Planet>,
+    planets: Planets,
 }
 
 impl Game {
@@ -50,37 +50,29 @@ impl Game {
                 one: false,
             },
             player_ship: PlayerShip::new(),
-            planets: Vec::new(),
+            planets: HashMap::new(),
             current_mode: GameMode::None,
         };
 
-        new_instance.planets.push(Planet::new(
-            -300.0,
-            -300.0,
-            1000.0,
-            "Metallia",
-            planets::Type::B,
-            {
+        new_instance.planets.insert(
+            String::from("Metallia"),
+            Planet::new(-300.0, -300.0, 1000.0, "Metallia", planets::Type::B, {
                 let mut inventory = HashMap::new();
                 inventory.insert(Item::IronIngot, PlanetItemInventory::new(1000, 10, 100));
                 inventory.insert(Item::FoodCrate, PlanetItemInventory::new(100, 100, 10));
                 inventory
-            },
-        ));
+            }),
+        );
 
-        new_instance.planets.push(Planet::new(
-            -200.0,
-            -200.0,
-            5000.0,
-            "Farm'leh",
-            planets::Type::A,
-            {
+        new_instance.planets.insert(
+            String::from("Farm'leh"),
+            Planet::new(-200.0, -200.0, 5000.0, "Farm'leh", planets::Type::A, {
                 let mut inventory = HashMap::new();
                 inventory.insert(Item::IronIngot, PlanetItemInventory::new(100, 100, 10));
                 inventory.insert(Item::FoodCrate, PlanetItemInventory::new(1000, 10, 100));
                 inventory
-            },
-        ));
+            }),
+        );
         new_instance
     }
 
@@ -179,7 +171,8 @@ impl Game {
                 // Handle game mode transition
                 if let Some(planet) = landingpossible_planet {
                     if self.button_just_pressed.one {
-                        self.current_mode = GameMode::Landed(GameModeLanded::new(&planet));
+                        self.current_mode =
+                            GameMode::Landed(GameModeLanded::new(&planet, &self.player_ship));
                         self.cooldown_tick = 10;
                     }
                 }
@@ -201,10 +194,35 @@ impl Game {
                                 // from the current planet and with the current ship
                                 self.current_mode = GameMode::Flying(GameModeFlying::new());
                             }
-                            gamemode_landed::Action::BuyMenu
-                            | gamemode_landed::Action::MainMenu => {
-                                self.current_mode = GameMode::Landed(updated_mode)
+                            gamemode_landed::Action::Buy(planet_name, item, quantity, price) => {
+                                // 2 seconds cooldown to show what's been bought
+                                self.cooldown_tick = 60;
+                                let mut updated_planet =
+                                    self.planets.get(&planet_name).unwrap().clone();
+                                updated_planet.sell(&item, quantity);
+                                self.planets
+                                    .insert(updated_planet.name.clone(), updated_planet);
+                                self.player_ship.buy(&item, quantity, price);
+                                self.current_mode = GameMode::Landed(GameModeLanded::new(
+                                    &self.planets.get(&planet_name).unwrap(),
+                                    &self.player_ship,
+                                ));
                             }
+                            gamemode_landed::Action::Sell(planet_name, item, quantity, price) => {
+                                // 2 seconds cooldown to show what's been bought
+                                self.cooldown_tick = 60;
+                                self.player_ship.sell(&item, quantity, price);
+                                let mut updated_planet =
+                                    self.planets.get(&planet_name).unwrap().clone();
+                                updated_planet.buy(&item, quantity);
+                                self.planets
+                                    .insert(updated_planet.name.clone(), updated_planet);
+                                self.current_mode = GameMode::Landed(GameModeLanded::new(
+                                    &self.planets.get(&planet_name).unwrap(),
+                                    &self.player_ship,
+                                ));
+                            }
+                            _ => self.current_mode = GameMode::Landed(updated_mode),
                         }
                     }
                     gamemode_landed::StateTransition::NoChange => {
