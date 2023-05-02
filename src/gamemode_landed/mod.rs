@@ -54,9 +54,24 @@ pub struct GameModeLanded {
 }
 
 impl GameModeLanded {
-    pub fn new(planet: &Planet, player_ship: &PlayerShip) -> Self {
+    pub fn new(planet: &Planet, player_ship: &PlayerShip, optional_action: Option<Action>) -> Self {
         Self {
-            menu: Mode::SubmenuMain(MainMenu::new(&planet)),
+            menu: match optional_action {
+                None => Mode::SubmenuMain(MainMenu::new(&planet)),
+                Some(action) => match action {
+                    Action::Buy(_, item, quantity, _) => Mode::SubmenuBuy(BuyMenu::new(
+                        &planet,
+                        &player_ship,
+                        Some((&item, quantity)),
+                    )),
+                    Action::Sell(_, item, quantity, _) => Mode::SubmenuSell(SellMenu::new(
+                        &planet,
+                        &player_ship,
+                        Some((&item, quantity)),
+                    )),
+                    _ => Mode::SubmenuMain(MainMenu::new(&planet)),
+                },
+            },
             planet: planet.clone(),
             player_ship: player_ship.clone(),
         }

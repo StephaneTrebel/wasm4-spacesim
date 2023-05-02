@@ -172,7 +172,7 @@ impl Game {
                 if let Some(planet) = landingpossible_planet {
                     if self.button_just_pressed.one {
                         self.current_mode =
-                            GameMode::Landed(GameModeLanded::new(&planet, &self.player_ship));
+                            GameMode::Landed(GameModeLanded::new(&planet, &self.player_ship, None));
                         self.cooldown_tick = 10;
                     }
                 }
@@ -206,6 +206,12 @@ impl Game {
                                 self.current_mode = GameMode::Landed(GameModeLanded::new(
                                     &self.planets.get(&planet_name).unwrap(),
                                     &self.player_ship,
+                                    Some(gamemode_landed::Action::Buy(
+                                        planet_name,
+                                        item,
+                                        quantity,
+                                        price,
+                                    )),
                                 ));
                             }
                             gamemode_landed::Action::Sell(planet_name, item, quantity, price) => {
@@ -220,6 +226,12 @@ impl Game {
                                 self.current_mode = GameMode::Landed(GameModeLanded::new(
                                     &self.planets.get(&planet_name).unwrap(),
                                     &self.player_ship,
+                                    Some(gamemode_landed::Action::Sell(
+                                        planet_name,
+                                        item,
+                                        quantity,
+                                        price,
+                                    )),
                                 ));
                             }
                             _ => self.current_mode = GameMode::Landed(updated_mode),
