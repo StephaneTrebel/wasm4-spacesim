@@ -121,12 +121,16 @@ impl PlayerShip {
         };
 
         self.increment_money(quantity * selling_price);
-        // TODO Remove entry if new_quantity=0
-        self.inventory.insert(
-            item.clone(),
-            PlayerInventory {
-                quantity: new_quantity as u32,
-            },
-        );
+
+        if new_quantity > 0 {
+            self.inventory.insert(
+                item.clone(),
+                PlayerInventory {
+                    quantity: new_quantity as u32,
+                },
+            );
+        } else {
+            self.inventory.remove(item);
+        }
     }
 }
