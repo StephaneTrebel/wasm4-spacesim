@@ -113,7 +113,6 @@ impl BuyMenu {
                 57 + index as i32 * 20,
             );
         }
-        text(b"\x85", 27, 27 + self.selected_option as i32 * 20);
         if cooldown_tick > 0 {
             match self.bought_stuff {
                 Some((item, quantity)) => {
@@ -127,6 +126,7 @@ impl BuyMenu {
                 None => {}
             }
         } else {
+            text(b"\x85", 27, 27 + self.selected_option as i32 * 20);
             let mut buf = [0u8; 32];
             text(
                 "MONEY: ".to_owned() + self.player_ship.money.numtoa_str(10, &mut buf) + " CRD",

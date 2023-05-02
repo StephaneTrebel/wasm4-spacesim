@@ -100,7 +100,6 @@ impl SellMenu {
         for (index, item) in self.player_ship.inventory.clone().into_iter().enumerate() {
             text(item.0.get_name(), 37, 47 + index as i32 * 20);
         }
-        text(b"\x85", 27, 27 + self.selected_option as i32 * 20);
         if cooldown_tick > 0 {
             match self.bought_stuff {
                 Some((item, quantity)) => {
@@ -113,6 +112,8 @@ impl SellMenu {
                 }
                 None => {}
             }
+        } else {
+            text(b"\x85", 27, 27 + self.selected_option as i32 * 20);
         }
     }
 }
