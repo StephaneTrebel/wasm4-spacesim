@@ -18,7 +18,7 @@ pub struct BuyMenu {
     bought_stuff: Option<(Item, u32)>,
 }
 
-const QUANTITY: Quantity = 10;
+const QUANTITY: Quantity = 1;
 
 impl BuyMenu {
     pub fn new(
@@ -89,7 +89,7 @@ impl BuyMenu {
                                     new_instance.planet.name.clone(),
                                     item,
                                     QUANTITY,
-                                    inventory.buying_price,
+                                    inventory.selling_price,
                                 ));
                             }
                         }
