@@ -105,7 +105,7 @@ impl SellMenu {
                 Some((item, quantity)) => {
                     let mut buf = [0u8; 32];
                     text(
-                        "- ".to_owned() + item.get_name() + " " + quantity.numtoa_str(10, &mut buf),
+                        "- ".to_owned() + item.get_name() + " *" + quantity.numtoa_str(10, &mut buf),
                         27,
                         147,
                     );
