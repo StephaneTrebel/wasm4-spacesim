@@ -115,7 +115,6 @@ impl PlayerShip {
         let previous_inventory = self.inventory.get(item);
 
         let new_quantity: i32 = match previous_inventory {
-            // Should not happen, TODO force an error
             None => 0,
             Some(inventory) => inventory.quantity as i32 - quantity as i32,
         };
